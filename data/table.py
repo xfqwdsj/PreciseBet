@@ -82,7 +82,7 @@ def parse_table(project_path: Path, html: str) -> DataTable:
                               guest_id]
 
         if match_id not in value.index:
-            value.loc[match_id] = [-1, -1, -1.0, False]
+            value.loc[match_id] = [0, 0, -1.0, False]
 
         if match_id not in handicap.index:
             handicap.loc[match_id] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, False]
@@ -93,10 +93,10 @@ def parse_table(project_path: Path, html: str) -> DataTable:
             league.loc[league_code] = tds[1]['bgcolor']
 
         if host_id not in team.index:
-            team.loc[host_id] = [host.text, -1, -1.0]
+            team.loc[host_id] = [host.text, 0, -1.0]
 
         if guest_id not in team.index:
-            team.loc[guest_id] = [guest.text, -1, -1.0]
+            team.loc[guest_id] = [guest.text, 0, -1.0]
 
     data.sort_values(by='场次', inplace=True)
     league.sort_index(inplace=True)

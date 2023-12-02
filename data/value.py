@@ -21,8 +21,8 @@ def get_team_value(team_id: int, ua: str) -> int:
 
     value = regex.search(r'球队身价：&euro; (\d+)万', text)
     if value is None:
-        click.echo('匹配失败。将该球队价值设为 -1', err=True)
-        return -1
+        click.echo('匹配失败。将该球队价值设为 0', err=True)
+        return 0
 
     click.echo('匹配成功，球队价值为 {} 万'.format(value.group(1)))
     return int(value.group(1))

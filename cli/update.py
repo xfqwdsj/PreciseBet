@@ -100,7 +100,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
             elif action == 'handicap':
                 handicap = get_match_handicap(match_id)
                 updated_time = datetime.now(timezone.utc).timestamp()
-                data.loc[match_id, ['平即盘1', '平即水', '平即盘2', '平初盘1', '平初水', '平初盘2',
+                data.loc[match_id, ['平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2',
                                     '更新时间']] = handicap + [updated_time]
 
             if global_data.loc[match_id]['状态'] != 0:

@@ -40,12 +40,12 @@ def export(ctx, file_name: str, file_format: str):
         volume_data.insert(0, '期数', volume_number)
         volume_data['主队价值'] = value['主队价值']
         volume_data['客队价值'] = value['客队价值']
-        volume_data['平即盘1'] = handicap['平即盘1']
-        volume_data['平即水'] = handicap['平即水']
-        volume_data['平即盘2'] = handicap['平即盘2']
-        volume_data['平初盘1'] = handicap['平初盘1']
-        volume_data['平初水'] = handicap['平初水']
-        volume_data['平初盘2'] = handicap['平初盘2']
+        volume_data['平即水1'] = handicap['平即水1']
+        volume_data['平即盘'] = handicap['平即盘']
+        volume_data['平即水2'] = handicap['平即水2']
+        volume_data['平初水1'] = handicap['平初水1']
+        volume_data['平初盘'] = handicap['平初盘']
+        volume_data['平初水2'] = handicap['平初水2']
 
         data = pd.concat([data, volume_data])
 

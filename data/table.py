@@ -1,5 +1,5 @@
-from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 data_columns = ['代号', '场次', '赛事', '轮次', '比赛时间', '状态', '主队', '客队']
 value_columns = ['代号', '主队价值', '客队价值', '更新时间', '已固定']
-handicap_columns = ['代号', '平即盘1', '平即水', '平即盘2', '平初盘1', '平初水', '平初盘2', '更新时间', '已固定']
+handicap_columns = ['代号', '平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间', '已固定']
 league_columns = ['代号', '颜色']
 team_columns = ['代号', '名称', '价值', '更新时间']
 

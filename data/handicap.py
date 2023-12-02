@@ -12,12 +12,7 @@ def parse(td: Tag) -> list[float]:
 def get_match_handicap(match_id: str) -> list[float]:
     url = 'https://odds.500.com/fenxi/yazhi-' + match_id[1:] + '.shtml'
 
-    text: str
-    try:
-        text = request_content(url)
-    except RuntimeError as err:
-        click.echo('{}。将该场比赛亚盘数据全部设为 0'.format(err), err=True)
-        return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    text = request_content(url)
 
     soup = BeautifulSoup(text, 'html.parser')
 

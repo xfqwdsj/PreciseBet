@@ -9,12 +9,7 @@ def get_team_value(team_id: int, ua: str) -> int:
 
     click.echo('正在获取代号为 {} 的球队价值信息...'.format(team_id))
 
-    text: str
-    try:
-        text = request_content(url, ua)
-    except RuntimeError as err:
-        click.echo('{}。将该球队价值设为 -1'.format(err), err=True)
-        return -1
+    text = request_content(url, ua)
 
     name = regex.search(r'<h2 class="lsnav_qdnav_name">(.+)</h2>', text)
     if name:

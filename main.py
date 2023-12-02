@@ -9,8 +9,7 @@ from cli import init_data, update, export
 
 @click.group()
 @click.pass_context
-@click.option('--project-path', '-p', help='项目路径', prompt='请输入项目路径', default='./project/',
-              type=click.Path())
+@click.option('--project-path', '-p', help='项目路径', default='./project/', type=click.Path())
 def cli(ctx, project_path: str):
     colorama.init(autoreset=True)
     ctx.ensure_object(dict)

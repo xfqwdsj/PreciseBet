@@ -1,7 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files
 
-datas = []
+datas = [
+    ('LICENSE', '.')
+]
 datas += collect_data_files('fake_useragent')
 
 

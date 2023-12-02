@@ -1,10 +1,35 @@
+#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import sys
+import textwrap
 from pathlib import Path
 
 import click
 import colorama
 
 from cli import generate_data, update, export
+
+notice = '{}\n\n{}\n\n{}\n\n'.format(textwrap.fill('PreciseBet  Copyright (C) 2023  LTFan (aka xfqwdsj)'),
+                                     textwrap.fill(
+                                         'This program comes with ABSOLUTELY NO WARRANTY.  This is free software, '
+                                         'and you are welcome to redistribute it under certain conditions.'),
+                                     textwrap.fill(
+                                         'You should have received a copy of the GNU General Public License along '
+                                         'with this program.  Type `{} license\' to read.  If not, '
+                                         'see <https://www.gnu.org/licenses/>.'.format(sys.argv[0])))
 
 
 @click.group(context_settings={'show_default': True})
@@ -18,19 +43,22 @@ def cli(ctx, project_path: str):
 
     1. 生成数据
 
-       precise_bet.exe generate-data --help
+       precise_bet generate-data --help
 
     2. 更新数据
 
-       precise_bet.exe main.py update --help
+       precise_bet main.py update --help
 
     3. 导出数据
 
-       precise_bet.exe main.py export --help
+       precise_bet main.py export --help
     """
 
     colorama.init(autoreset=True)
     ctx.ensure_object(dict)
+
+    click.echo(notice)
+
     path = Path(project_path)
     if path.exists() and not path.is_dir():
         confirm = click.confirm('项目路径 {} 已存在且不是文件夹，是否删除？'.format(project_path), default=False,
@@ -45,6 +73,20 @@ def cli(ctx, project_path: str):
 
     path.mkdir(exist_ok=True)
     ctx.obj['project_path'] = path
+
+
+@cli.command('license')
+def show_license():
+    """显示许可证信息"""
+
+    file = click.open_file(str(Path(__file__) / '../LICENSE'), 'r')
+    click.echo(file.read())
+    file.close()
+
+
+@cli.command()
+def about():
+    pass
 
 
 cli.add_command(generate_data)

@@ -1,3 +1,5 @@
+#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path

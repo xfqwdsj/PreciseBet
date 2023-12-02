@@ -1,3 +1,5 @@
+#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import random
 from datetime import datetime, timezone, timedelta
 from pathlib import Path

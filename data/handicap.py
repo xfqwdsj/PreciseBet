@@ -1,3 +1,5 @@
+#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import click
 from bs4 import BeautifulSoup, Tag
 

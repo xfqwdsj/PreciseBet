@@ -18,7 +18,8 @@ def get_match_handicap(match_id: str) -> list[float]:
 
     tds = soup.find('tr', attrs={'xls': 'footer'}).find_all('td')
 
-    handicap = [float(tds[3].text), float(tds[4].text), float(tds[5].text), float(tds[9].text), float(tds[10].text), float(tds[11].text)]
+    raw = [tds[3].text, tds[4].text, tds[5].text, tds[9].text, tds[10].text, tds[11].text]
+    handicap = [float(i) if i != ' ' else 0 for i in raw]
 
     click.echo('获取亚盘数据成功，数据为：{}'.format(handicap))
 

@@ -112,6 +112,9 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
             if action == 'value':
                 save_to_csv(team_data, project_path, 'team')
 
+            if match_id == processing_data.index[-1]:
+                break
+
             if random.random() < long_interval_probability:
                 click.echo('随机数命中，将使用长时间更新间隔（概率：{}）'.format(long_interval_probability))
                 sleep(long_interval, interval_offset_range)

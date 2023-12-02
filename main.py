@@ -18,15 +18,15 @@ def cli(ctx, project_path: str):
 
     1. 生成数据
 
-       python main.py generate-data --help
+       precise_bet.exe generate-data --help
 
     2. 更新数据
 
-       python main.py update --help
+       precise_bet.exe main.py update --help
 
     3. 导出数据
 
-       python main.py export --help
+       precise_bet.exe main.py export --help
     """
 
     colorama.init(autoreset=True)

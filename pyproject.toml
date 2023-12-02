@@ -6,7 +6,7 @@ authors = ["LTFan <xfqwdsj@qq.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 requests = "^2.31.0"
 click = "^8.1.7"
 pandas = "^2.1.3"
@@ -14,7 +14,11 @@ jinja2 = "^3.1.2"
 openpyxl = "^3.1.2"
 regex = "^2023.10.3"
 fake-useragent = "^1.4.0"
+beautifulsoup4 = "^4.12.2"
 
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.2.0"
 
 [build-system]
 requires = ["poetry-core"]

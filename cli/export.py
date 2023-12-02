@@ -13,6 +13,10 @@ from data import match_status, save_to_csv, save_to_excel
 @click.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
               type=click.Choice(['csv', 'excel']))
 def export(ctx, file_name: str, file_format: str):
+    """
+    导出数据
+    """
+
     project_path: Path = ctx.obj['project_path']
 
     click.echo('开始导出数据...')

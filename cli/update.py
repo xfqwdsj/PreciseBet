@@ -27,6 +27,29 @@ actions = {'value': '球队价值', 'handicap': '亚盘', }
 def update(ctx, action: str, debug: bool, volume_number: int, interval: int, long_interval: int,
            long_interval_probability: float, interval_offset_range: int, random_ua: bool, break_hours: int,
            only_new: bool):
+    """
+    更新数据
+
+    更新数据的作用是获取最新的比赛信息，包括球队价值和亚盘
+
+    更新数据采取的策略是比赛状态更高的比赛优先更新，比赛状态相同时，距上次更新时间更长的比赛优先更新
+
+    频繁更新大量数据可能会导致被封禁。建议在正常工作时间进行更新并在时间允许的情况下使用命令行选项延长更新间隔
+
+    比赛开始后，球队价值及亚盘信息将不再更新
+
+    ## 延长更新间隔
+
+    默认更新间隔为 5 秒，长时间更新间隔为 60 秒，长时间更新间隔概率为 0.025，更新间隔偏移量范围为 2 秒。这意味着每次更新将使用 5 ± 2 秒的间
+    隔，但是有 2.5% 的概率使用 60 ± 2 秒的间隔
+
+    ## 减少更新次数
+
+    通过 `--break-hours` 选项可以指定要跳过多少小时后的未开始的比赛。默认情况下，跳过 6 小时后的未开始的比赛
+
+    通过 `--only-new` 标志可以只更新从未获取过的比赛，这样可以进一步减少更新次数，但是可能会降低数据的即时性
+    """
+
     project_path: Path = ctx.obj['project_path']
 
     click.echo('正在读取数据...')

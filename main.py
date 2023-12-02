@@ -4,13 +4,31 @@ from pathlib import Path
 import click
 import colorama
 
-from cli import init_data, update, export
+from cli import generate_data, update, export
 
 
-@click.group()
+@click.group(context_settings={'show_default': True})
 @click.pass_context
 @click.option('--project-path', '-p', help='项目路径', default='./project/', type=click.Path())
 def cli(ctx, project_path: str):
+    """
+    一个用于获取 500.com 足球数据的命令行工具
+
+    ## 使用方法
+
+    1. 生成数据
+
+       python main.py generate-data --help
+
+    2. 更新数据
+
+       python main.py update --help
+
+    3. 导出数据
+
+       python main.py export --help
+    """
+
     colorama.init(autoreset=True)
     ctx.ensure_object(dict)
     path = Path(project_path)
@@ -29,7 +47,7 @@ def cli(ctx, project_path: str):
     ctx.obj['project_path'] = path
 
 
-cli.add_command(init_data)
+cli.add_command(generate_data)
 cli.add_command(update)
 cli.add_command(export)
 

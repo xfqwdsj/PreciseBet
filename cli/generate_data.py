@@ -2,14 +2,14 @@ from pathlib import Path
 
 import click
 
-from data import parse_table, save_to_csv, DataTable
+from data import parse_table, save_to_csv
 from util import request_content
 
 
 @click.command()
 @click.pass_context
 @click.option('--volume-number', '-v', help='期数', default=None, type=int)
-def init_data(ctx, volume_number: int | None):
+def generate_data(ctx, volume_number: int | None):
     project_path: Path = ctx.obj['project_path']
 
     click.echo('正在获取数据...')

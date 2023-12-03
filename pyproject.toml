@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "precisebet"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["LTFan <xfqwdsj@qq.com>"]
 readme = "README.md"

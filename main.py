@@ -94,7 +94,7 @@ def show_license():
 
 @cli.command()
 def about():
-    pass
+    click.echo('PreciseBet 0.1.1')
 
 
 cli.add_command(generate_data)

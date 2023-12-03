@@ -49,11 +49,11 @@ def cli(ctx, project_path: str):
 
     2. 更新数据
 
-       precise_bet main.py update --help
+       precise_bet update --help
 
     3. 导出数据
 
-       precise_bet main.py export --help
+       precise_bet export --help
     """
 
     colorama.init(autoreset=True)

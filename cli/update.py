@@ -3,12 +3,14 @@
 import random
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from typing import Any
 
 import click
 import pandas as pd
+from click_option_group import optgroup
 from fake_useragent import UserAgent
 
-from data import save_to_csv, get_team_value, get_match_handicap
+from data import save_to_csv, get_team_value, get_match_handicap, match_status
 from util import sleep
 
 actions = {'value': '球队价值', 'handicap': '亚盘', }
@@ -17,15 +19,21 @@ actions = {'value': '球队价值', 'handicap': '亚盘', }
 @click.command()
 @click.pass_context
 @click.argument('action', type=click.Choice(['value', 'handicap']))
-@click.option('--debug', '-d', help='调试模式', is_flag=True)
 @click.option('--volume-number', '-v', help='期数', prompt='请输入期数', type=int)
-@click.option('--interval', '-i', help='更新间隔（秒）', default=5, type=int)
-@click.option('--long-interval', '-l', help='长时间更新间隔（秒）', default=60, type=int)
-@click.option('--long-interval-probability', '-p', help='长时间更新间隔概率（0-1）', default=0.025, type=float)
-@click.option('--interval_offset-range', '-o', help='更新间隔偏移量范围（秒）', default=2, type=int)
-@click.option('--random-ua', '-u', help='随机 UA', is_flag=True)
-@click.option('--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（时）', default=6, type=int)
-@click.option('--only-new', '-n', help='只更新从未获取过的比赛', is_flag=True)
+@optgroup.group('调试选项', help='调试选项')
+@optgroup.option('--debug', '-d', help='调试模式', is_flag=True)
+@optgroup.group('风控选项', help='指定更新时采取的风控机制')
+@optgroup.option('--interval', '-i', help='更新间隔（秒）', default=5, type=int)
+@optgroup.option('--long-interval', '-l', help='长时间更新间隔（秒）', default=60, type=int)
+@optgroup.option('--long-interval-probability', '-p', help='长时间更新间隔概率（0-1）', default=0.025, type=float)
+@optgroup.option('--interval_offset-range', '-o', help='更新间隔偏移量范围（秒）', default=2, type=int)
+@optgroup.option('--random-ua', help='随机 UA', is_flag=True)
+@optgroup.group('更新选项', help='指定更新时采取的策略')
+@optgroup.option('--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（设为 0 以更新全部，时）', default=6,
+                 type=int)
+@optgroup.option('--limit', '-m', help='指定要更新多少场比赛（设为 0 以更新与策略匹配的全部比赛）', default=0, type=int)
+@optgroup.option('--only-new', '-n', help='只更新从未获取过的比赛', is_flag=True)
+@optgroup.option('--ignore-fixed', help='忽略已固定的比赛', is_flag=True)
 def update(ctx, action: str, debug: bool, volume_number: int, interval: int, long_interval: int,
            long_interval_probability: float, interval_offset_range: int, random_ua: bool, break_hours: int,
            only_new: bool):

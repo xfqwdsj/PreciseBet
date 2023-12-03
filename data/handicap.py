@@ -1,6 +1,5 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
-import click
 from bs4 import BeautifulSoup, Tag
 
 from util import request_content
@@ -22,7 +21,5 @@ def get_match_handicap(match_id: str) -> list[float]:
 
     raw = [tds[3].text, tds[4].text, tds[5].text, tds[9].text, tds[10].text, tds[11].text]
     handicap = [float(i) if i != ' ' else 0 for i in raw]
-
-    click.echo('获取亚盘数据成功，数据为：{}'.format(handicap))
 
     return handicap

@@ -19,8 +19,10 @@ from pathlib import Path
 
 import click
 import colorama
+import pandas as pd
 
 from cli import generate_data, update, export
+from data import match_status
 
 notice = '{}\n\n{}\n\n{}\n\n'.format(textwrap.fill('PreciseBet  Copyright (C) 2023  LTFan (aka xfqwdsj)'),
                                      textwrap.fill(
@@ -73,6 +75,12 @@ def cli(ctx, project_path: str):
 
     path.mkdir(exist_ok=True)
     ctx.obj['project_path'] = path
+
+
+@cli.command()
+def print_match_status_codes():
+    df = pd.DataFrame(match_status, index=['状态']).transpose()
+    click.echo(df)
 
 
 @cli.command('license')

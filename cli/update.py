@@ -44,6 +44,8 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
 
     更新数据采取的策略是比赛状态更高的比赛优先更新，比赛状态相同时，距上次更新时间更长的比赛优先更新
 
+    要获取比赛状态列表，请使用 `precise_bet print-match-status-codes` 命令
+
     频繁更新大量数据可能会导致被封禁。建议在正常工作时间进行更新并在时间允许的情况下使用命令行选项延长更新间隔
 
     比赛开始后，球队价值及亚盘信息将不再更新

@@ -80,8 +80,13 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
     long_interval_used_count = 0
     ua = UserAgent().random
 
-    with click.progressbar(processing_data.index, show_pos=True) as indexes:
-        for match_id in indexes:
+    with click.progressbar(processing_data.index, show_eta=False, show_percent=True, show_pos=True) as indexes:
+        for index, match_id in enumerate(indexes):
+            estimated_time = timedelta(
+                seconds=(interval * (1 - long_interval_probability) + long_interval * long_interval_probability + 1) * (
+                        len(processing_data) - index))
+            click.echo('预计全部更新还需要 {}'.format(estimated_time))
+
             host_name = team_data.loc[global_data.loc[match_id, '主队'], '名称']
             guest_name = team_data.loc[global_data.loc[match_id, '客队'], '名称']
 
@@ -114,7 +119,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
             if action == 'value':
                 save_to_csv(team_data, project_path, 'team')
 
-            if match_id == processing_data.index[-1]:
+            if index == len(processing_data) - 1:
                 break
 
             if random.random() < long_interval_probability:

@@ -2,7 +2,7 @@
 
 from bs4 import BeautifulSoup, Tag
 
-from util import request_content
+from precise_bet.util import request_content
 
 
 def parse(td: Tag) -> list[float]:

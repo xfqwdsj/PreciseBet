@@ -10,8 +10,8 @@ import pandas as pd
 from click_option_group import optgroup
 from fake_useragent import UserAgent
 
-from data import save_to_csv, get_team_value, get_match_handicap, match_status
-from util import sleep
+from precise_bet.data import save_to_csv, get_team_value, get_match_handicap, match_status
+from precise_bet.util import sleep
 
 actions = {'value': '球队价值', 'handicap': '亚盘', }
 

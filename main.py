@@ -21,8 +21,9 @@ import click
 import colorama
 import pandas as pd
 
-from cli import generate_data, update, export
-from data import match_status
+from precise_bet.cli import generate_data, update, export
+from precise_bet.data import match_status
+from precise_bet.version import __version__
 
 notice = '{}\n\n{}\n\n{}\n\n'.format(textwrap.fill('PreciseBet  Copyright (C) 2023  LTFan (aka xfqwdsj)'),
                                      textwrap.fill(

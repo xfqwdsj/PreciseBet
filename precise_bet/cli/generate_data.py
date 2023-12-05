@@ -4,8 +4,8 @@ from pathlib import Path
 
 import click
 
-from data import parse_table, save_to_csv
-from util import request_content
+from precise_bet.data import parse_table, save_to_csv
+from precise_bet.util import request_content
 
 
 @click.command()

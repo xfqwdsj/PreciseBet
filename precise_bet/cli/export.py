@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 import pandas as pd
 
-from data import match_status, save_to_csv, save_to_excel
+from precise_bet.data import match_status, save_to_csv, save_to_excel
 
 
 @click.command()

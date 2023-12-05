@@ -3,7 +3,7 @@
 import click
 import regex
 
-from util import request_content
+from precise_bet.util import request_content
 
 
 def get_team_value(team_id: int, ua: str) -> int:

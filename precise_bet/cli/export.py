@@ -5,16 +5,20 @@ from pathlib import Path
 
 import click
 import pandas as pd
+from click_option_group import optgroup
 
 from precise_bet.data import match_status, save_to_csv, save_to_excel
 
 
 @click.command()
 @click.pass_context
-@click.option('--file-name', '-n', help='导出文件名', default='data', type=str)
-@click.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
-              type=click.Choice(['csv', 'excel']))
-def export(ctx, file_name: str, file_format: str):
+@optgroup.group('导出选项', help='指定导出时使用的选项')
+@optgroup.option('--file-name', '-n', help='导出文件名', default='data', type=str)
+@optgroup.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
+                 type=click.Choice(['csv', 'excel']))
+@optgroup.group('其他选项', help='其他选项')
+@optgroup.option('--special-format', '-s', help='使用特殊格式', is_flag=True)
+def export(ctx, file_name: str, file_format: str, special_format: bool):
     """
     导出数据
     """
@@ -45,6 +49,9 @@ def export(ctx, file_name: str, file_format: str):
         volume_data['平即水1'] = handicap['平即水1']
         volume_data['平即盘'] = handicap['平即盘']
         volume_data['平即水2'] = handicap['平即水2']
+        if special_format:
+            volume_data['空列1'] = ''
+            volume_data['空列2'] = ''
         volume_data['平初水1'] = handicap['平初水1']
         volume_data['平初盘'] = handicap['平初盘']
         volume_data['平初水2'] = handicap['平初水2']

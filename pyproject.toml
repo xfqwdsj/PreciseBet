@@ -2,6 +2,7 @@
 name = "precise_bet"
 version = "0.0.0"
 description = ""
+license = "GPL-3.0-or-later"
 authors = ["LTFan <xfqwdsj@qq.com>"]
 readme = "README.md"
 
@@ -32,8 +33,12 @@ dirty = true
 style = "semver"
 
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["precise_bet/info.py"]
+
+
 [tool.poetry.scripts]
-build = "precise_bet.build:build"
+build = "precise_bet.build:full_build"
 
 
 [build-system]

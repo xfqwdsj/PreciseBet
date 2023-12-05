@@ -17,6 +17,4 @@ def flow(ctx, volume_number: int, full_update: bool):
     if full_update:
         ctx.invoke(precise_bet.cli.update, action='value', volume_number=volume_number, only_new=True)
     ctx.invoke(precise_bet.cli.update, action='handicap', volume_number=volume_number)
-    ctx.invoke(precise_bet.cli.update, action='handicap', volume_number=volume_number, ignore_fixed=True,
-               limit_status='4')
     ctx.invoke(precise_bet.cli.export, file_format='excel', special_format=True)

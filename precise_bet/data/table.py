@@ -73,7 +73,7 @@ def parse_table(project_path: Path, html: str) -> DataTable:
         host_id = int(urlparse(host['href']).path.split('/')[2])
         guest_id = int(urlparse(guest['href']).path.split('/')[2])
         match_time = datetime.strptime(str(volume_number)[:2] + tds[3].text, '%y%m-%d %H:%M')
-        match_timestamp = match_time.astimezone(ZoneInfo('Asia/Shanghai')).timestamp()
+        match_timestamp = int(match_time.astimezone(ZoneInfo('Asia/Shanghai')).timestamp())
 
         data.loc[match_id] = [int(tds[0].text), tds[1].text, tds[2].text, match_timestamp, int(tr['status']), host_id,
                               guest_id]

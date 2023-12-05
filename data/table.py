@@ -86,14 +86,17 @@ def parse_table(project_path: Path, html: str) -> DataTable:
 
         league_code = urlparse(tds[1].find('a')['href']).path.split('/')[1]
 
-        if league_code not in league.index:
-            league.loc[league_code] = tds[1]['bgcolor']
+        league.loc[league_code] = tds[1]['bgcolor']
 
         if host_id not in team.index:
             team.loc[host_id] = [host.text, 0, -1.0]
+        else:
+            team.loc[host_id, '名称'] = host.text
 
         if guest_id not in team.index:
             team.loc[guest_id] = [guest.text, 0, -1.0]
+        else:
+            team.loc[guest_id, '名称'] = guest.text
 
     data.sort_values(by='场次', inplace=True)
     league.sort_index(inplace=True)

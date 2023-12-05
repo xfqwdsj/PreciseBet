@@ -25,6 +25,9 @@ jobs:
         with:
           fetch-tags: true
 
+      - name: Get tags
+        run: git fetch --tags origin
+
       - name: Install Poetry
         run: pipx install poetry
 

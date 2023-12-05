@@ -77,6 +77,8 @@ def cli(ctx, project_path: str):
 
 @cli.command()
 def print_match_status_codes():
+    """显示比赛状态列表"""
+
     df = pd.DataFrame(match_status, index=['状态']).transpose()
     click.echo(df)
 
@@ -92,7 +94,8 @@ def show_license():
 
 @cli.command()
 def about():
-    click.echo('PreciseBet 0.1.1')
+    """显示关于信息"""
+
     click.echo(f'PreciseBet {__version__}')
 
 

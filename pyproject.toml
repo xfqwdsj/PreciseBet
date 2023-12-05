@@ -23,6 +23,7 @@ tzdata = "^2023.3"
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.2.0"
 pyinstaller-versionfile = "^2.1.1"
+semver = "^3.0.2"
 
 
 [tool.poetry-dynamic-versioning]
@@ -38,7 +39,7 @@ files = ["precise_bet/info.py"]
 
 
 [tool.poetry.scripts]
-build = "precise_bet.build:full_build"
+build = "precise_bet.build:build"
 
 
 [build-system]

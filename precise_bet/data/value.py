@@ -9,13 +9,13 @@ from precise_bet.util import request_content
 def get_team_value(team_id: int, ua: str) -> int:
     url = 'https://liansai.500.com/team/' + str(team_id)
 
-    click.echo('正在获取代号为 {} 的球队价值信息...'.format(team_id))
+    click.echo(f'正在获取代号为 {team_id} 的球队价值信息...')
 
     text = request_content(url, ua)
 
     name = regex.search(r'<h2 class="lsnav_qdnav_name">(.+)</h2>', text)
     if name:
-        click.echo('球队名称为 {}'.format(name.group(1)))
+        click.echo(f'球队名称为 {name.group(1)}')
     else:
         click.echo('未找到球队名称', err=True)
 

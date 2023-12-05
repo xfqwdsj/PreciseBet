@@ -24,15 +24,14 @@ def generate_data(ctx, volume_number: int | None):
 
     text: str
     try:
-        text = request_content(
-            'https://live.500.com/zqdc.php' + ('?e={}'.format(volume_number) if volume_number else ''))
+        text = request_content(f'https://live.500.com/zqdc.php{f'?e={volume_number}' if volume_number else ''}')
     except RuntimeError as err:
         click.echo(err, err=True)
         return
 
     data_table = parse_table(project_path, text)
 
-    click.echo('解析成功，期数：{}'.format(data_table.volume_number))
+    click.echo(f'解析成功，期数：{data_table.volume_number}')
 
     save_to_csv(data_table.data, project_path / str(data_table.volume_number), 'data')
     save_to_csv(data_table.value, project_path / str(data_table.volume_number), 'value')

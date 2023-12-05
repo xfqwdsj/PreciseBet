@@ -25,14 +25,11 @@ from precise_bet.cli import generate_data, update, export
 from precise_bet.data import match_status
 from precise_bet.version import __version__
 
-notice = '{}\n\n{}\n\n{}\n\n'.format(textwrap.fill('PreciseBet  Copyright (C) 2023  LTFan (aka xfqwdsj)'),
-                                     textwrap.fill(
-                                         'This program comes with ABSOLUTELY NO WARRANTY.  This is free software, '
-                                         'and you are welcome to redistribute it under certain conditions.'),
-                                     textwrap.fill(
-                                         'You should have received a copy of the GNU General Public License along '
-                                         'with this program.  Type `{} license\' to read.  If not, '
-                                         'see <https://www.gnu.org/licenses/>.'.format(sys.argv[0])))
+notice = f'{textwrap.fill(f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)')}\n\n' \
+         f'{textwrap.fill('This program comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome '
+                          'to redistribute it under certain conditions.')}\n\n' \
+         f'{textwrap.fill('You should have received a copy of the GNU General Public License along  with this program.  Type '
+                          f'`{sys.argv[0]} license\' to read.  If not, see <https://www.gnu.org/licenses/>.')}\n\n'
 
 
 @click.group(context_settings={'show_default': True})
@@ -64,7 +61,7 @@ def cli(ctx, project_path: str):
 
     path = Path(project_path)
     if path.exists() and not path.is_dir():
-        confirm = click.confirm('项目路径 {} 已存在且不是文件夹，是否删除？'.format(project_path), default=False,
+        confirm = click.confirm(f'项目路径 {project_path} 已存在且不是目录，是否删除？', default=False,
                                 show_default=True, err=True)
 
         if not confirm:
@@ -96,6 +93,7 @@ def show_license():
 @cli.command()
 def about():
     click.echo('PreciseBet 0.1.1')
+    click.echo(f'PreciseBet {__version__}')
 
 
 cli.add_command(generate_data)

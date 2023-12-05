@@ -33,7 +33,7 @@ def export(ctx, file_name: str, file_format: str):
 
         volume_number = int(volume.name)
 
-        click.echo('正在处理第 {} 期数据...'.format(volume_number))
+        click.echo(f'正在处理第 {volume_number} 期数据...')
 
         volume_data = pd.read_csv(volume / 'data.csv', index_col='代号')
         value = pd.read_csv(volume / 'value.csv', index_col='代号')

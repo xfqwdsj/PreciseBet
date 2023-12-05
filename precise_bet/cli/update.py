@@ -68,7 +68,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
 
     click.echo('正在读取数据...')
     global_data = pd.read_csv(project_path / str(volume_number) / 'data.csv', index_col='代号')
-    data = pd.read_csv(project_path / str(volume_number) / '{}.csv'.format(action), index_col='代号')
+    data = pd.read_csv(project_path / str(volume_number) / f'{action}.csv', index_col='代号')
     team_data = pd.read_csv(project_path / 'team.csv', index_col='代号')
 
     break_time = (datetime.now() + timedelta(hours=break_hours)).timestamp()
@@ -100,7 +100,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
     click.echo(data_analysis)
 
     action_name = actions[action]
-    click.echo('开始更新 {} 信息...'.format(action_name))
+    click.echo(f'开始更新 {action_name} 信息...')
 
     long_interval_used_count = 0
     ua = UserAgent().random
@@ -110,18 +110,17 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
             estimated_time = timedelta(
                 seconds=(interval * (1 - long_interval_probability) + long_interval * long_interval_probability + 1) * (
                         len(processing_data) - index))
-            click.echo('   预计全部更新还需要 {}'.format(estimated_time))
+            click.echo(f'   预计全部更新还需要 {estimated_time}')
 
             host_name = team_data.loc[global_data.loc[match_id, '主队'], '名称']
             guest_name = team_data.loc[global_data.loc[match_id, '客队'], '名称']
             status = click.style(match_status[global_data.loc[match_id, '状态']], fg='blue', bold=True)
 
             click.echo(
-                '正在更新代号为 {} 的比赛（{} VS {}，{}）的 {} 信息...'.format(match_id, host_name, guest_name, status,
-                                                                            action_name))
+                f'正在更新代号为 {match_id} 的比赛（{host_name} VS {guest_name}，{status}）的 {action_name} 信息...')
 
             if data.loc[match_id, '更新时间'] == -1.0:
-                click.echo('该场比赛为从未获取过 {} 的比赛'.format(action_name))
+                click.echo(f'该场比赛为从未获取过 {action_name} 的比赛')
 
             before: Any
             after: Any
@@ -146,11 +145,11 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
                     updated_time]
 
             if before == after:
-                click.echo('该场比赛的 {} 信息未发生变化'.format(action_name))
+                click.echo(f'该场比赛的 {action_name} 信息未发生变化')
                 click.echo('当前：')
                 click.secho(str(after), fg='blue', bold=True)
             else:
-                click.echo('该场比赛的 {} 信息已更新'.format(action_name))
+                click.echo(f'该场比赛的 {action_name} 信息已更新')
                 click.echo('更新前：')
                 click.secho(str(before), fg='red')
                 click.echo('更新后：')
@@ -158,7 +157,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
 
             if global_data.loc[match_id]['状态'] != 0:
                 data.loc[match_id, '已固定'] = True
-                click.secho('已固定该场比赛的 {} 信息'.format(action_name), fg='yellow', bold=True)
+                click.secho(f'已固定该场比赛的 {action_name} 信息', fg='yellow', bold=True)
 
             save_to_csv(data, project_path / str(volume_number), action)
 
@@ -169,7 +168,7 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
                 break
 
             if random.random() < long_interval_probability:
-                click.secho('随机数命中，将使用长时间更新间隔（概率：{}）'.format(long_interval_probability), fg='yellow')
+                click.secho(f'随机数命中，将使用长时间更新间隔（概率：{long_interval_probability}）', fg='yellow')
                 sleep(long_interval, interval_offset_range)
                 long_interval_used_count += 1
             else:
@@ -178,4 +177,4 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, lon
             if random_ua:
                 ua = UserAgent().random
 
-    click.echo('更新完成，应用了长时间更新间隔的次数：{}'.format(long_interval_used_count))
+    click.echo(f'更新完成，应用了长时间更新间隔的次数：{long_interval_used_count}')

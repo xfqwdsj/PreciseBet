@@ -21,9 +21,9 @@ import click
 import colorama
 import pandas as pd
 
+from precise_bet import __version__
 from precise_bet.cli import generate_data, update, export
 from precise_bet.data import match_status
-from precise_bet.version import __version__
 
 notice = f'{textwrap.fill(f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)')}\n\n' \
          f'{textwrap.fill('This program comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome '

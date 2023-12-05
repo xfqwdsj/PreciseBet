@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ ubuntu-latest, windows-latest ]
 
     name: Build on ${{ matrix.os }}
 
@@ -26,17 +26,19 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
-          cache: 'poetry'
+          python-version: 3.12
+          cache: poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry self add "poetry-dynamic-versioning[plugin]"
 
       - name: Build program
-        run: poetry run pyinstaller main.spec
+        run: poetry run build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3

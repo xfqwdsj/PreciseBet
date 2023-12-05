@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "precisebet"
-version = "0.1.1"
+name = "precise_bet"
+version = "0.0.0"
 description = ""
 authors = ["LTFan <xfqwdsj@qq.com>"]
 readme = "README.md"
@@ -21,7 +21,24 @@ tzdata = "^2023.3"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.2.0"
+pyinstaller-versionfile = "^2.1.1"
+
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+metadata = true
+dirty = true
+style = "semver"
+
+
+[tool.poetry.scripts]
+build = "precise_bet.build:build"
+
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = [
+    "poetry-core",
+    "poetry-dynamic-versioning",
+]
+build-backend = "poetry_dynamic_versioning.backend"

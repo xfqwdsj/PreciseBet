@@ -28,8 +28,9 @@ from precise_bet.data import match_status
 notice = f'{textwrap.fill(f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)')}\n\n' \
          f'{textwrap.fill('This program comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are welcome '
                           'to redistribute it under certain conditions.')}\n\n' \
-         f'{textwrap.fill('You should have received a copy of the GNU General Public License along  with this program.  Type '
-                          f'`{sys.argv[0]} license\' to read.  If not, see <https://www.gnu.org/licenses/>.')}\n\n'
+         f'{textwrap.fill('You should have received a copy of the GNU General Public License along  with this '
+                          f'program.  Type `{sys.argv[0]} license\' to read.  If not, see '
+                          '<https://www.gnu.org/licenses/>.')}\n\n'
 
 
 @click.group(context_settings={'show_default': True})
@@ -57,12 +58,10 @@ def cli(ctx, project_path: str):
     colorama.init(autoreset=True)
     ctx.ensure_object(dict)
 
-    click.echo(notice)
-
     path = Path(project_path)
     if path.exists() and not path.is_dir():
-        confirm = click.confirm(f'项目路径 {project_path} 已存在且不是目录，是否删除？', default=False,
-                                show_default=True, err=True)
+        confirm = click.confirm(f'项目路径 {project_path} 已存在且不是目录，是否删除？', default=False, show_default=True,
+                                err=True)
 
         if not confirm:
             click.echo('已取消')
@@ -104,4 +103,6 @@ cli.add_command(update)
 cli.add_command(export)
 
 if __name__ == '__main__':
+    click.echo(notice)
+
     cli()

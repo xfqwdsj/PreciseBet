@@ -22,7 +22,7 @@ import colorama
 import pandas as pd
 
 from precise_bet import __version__
-from precise_bet.cli import generate_data, update, export
+from precise_bet.cli import generate_data, update, export, flow
 from precise_bet.data import match_status
 
 notice = f'{textwrap.fill(f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)')}\n\n' \
@@ -53,6 +53,10 @@ def cli(ctx, project_path: str):
     3. 导出数据
 
        precise_bet export --help
+
+    ## 傻瓜式工作流
+
+    precise_bet flow --help
     """
 
     colorama.init(autoreset=True)
@@ -101,6 +105,7 @@ def about():
 cli.add_command(generate_data)
 cli.add_command(update)
 cli.add_command(export)
+cli.add_command(flow)
 
 if __name__ == '__main__':
     click.echo(notice)

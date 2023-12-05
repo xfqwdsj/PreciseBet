@@ -13,7 +13,7 @@ from fake_useragent import UserAgent
 from precise_bet.data import save_to_csv, get_team_value, get_match_handicap, match_status
 from precise_bet.util import sleep
 
-actions = {'value': '球队价值', 'handicap': '亚盘', }
+actions = {'value': '球队价值', 'handicap': '亚盘'}
 
 
 @click.command()

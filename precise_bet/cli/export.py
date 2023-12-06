@@ -6,8 +6,16 @@ from pathlib import Path
 import click
 import pandas as pd
 from click_option_group import optgroup
-
 from precise_bet.data import match_status, save_to_csv, save_to_excel
+
+ya_hei = 'font-family: 微软雅黑;'
+calibri = 'font-family: Calibri;'
+tahoma = 'font-family: Tahoma;'
+nine_point = 'font-size: 9pt;'
+ten_point = 'font-size: 10pt;'
+center = 'text-align: center;'
+left = 'text-align: left;'
+middle = 'vertical-align: middle;'
 
 
 @click.command()
@@ -29,6 +37,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
 
     data = pd.DataFrame(columns=['代号']).set_index('代号')
 
+    league = pd.read_csv(project_path / 'league.csv', index_col='代号')
     team = pd.read_csv(project_path / 'team.csv', index_col='代号')
 
     for volume in project_path.iterdir():
@@ -61,12 +70,32 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
     timezone = datetime.now().astimezone().tzinfo
 
     data['比赛时间'] = pd.to_datetime(data['比赛时间'], unit='s', utc=True).dt.tz_convert(timezone)
-    data['状态'] = data['状态'].map(match_status)
     data['主队'] = data['主队'].map(team['名称'])
     data['客队'] = data['客队'].map(team['名称'])
 
+    status = data['状态'].map(match_status)
+    if special_format:
+        data.drop(columns=['状态'], inplace=True)
+    data['状态'] = status
+
     if file_format == 'csv':
+        data['赛事'] = data['赛事'].map(league['名称'])
         save_to_csv(data, project_path, file_name)
     elif file_format == 'excel':
         data['比赛时间'] = data['比赛时间'].dt.tz_localize(None)
-        save_to_excel(data, project_path, file_name)
+        league_styles = data['赛事'].map(league['颜色'])
+        league_styles = league_styles.apply(lambda x: f'color: white;background-color: {x};'
+                                                      f'{ya_hei}{nine_point}{center}{middle}')
+        data['赛事'] = data['赛事'].map(league['名称'])
+
+        length = len(data)
+        style = data.style
+        style.apply(lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length, subset=['期数', '场次'])
+        style.apply(lambda _: league_styles, subset=['赛事'])
+        style.apply(lambda _: [f'{nine_point}{middle}'] * length, subset=['轮次'])
+        style.apply(lambda _: [f'{calibri}{nine_point}{middle}'] * length, subset=['比赛时间'])
+        style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=['主队', '客队'])
+        style.apply(lambda _: [f'{left}{middle}'] * length, subset=['主队价值', '客队价值'])
+        style.apply(lambda _: [f'{tahoma}{nine_point}{center}{middle}'] * length,
+                    subset=['平初水1', '平初盘', '平初水2', '平即水1', '平即盘', '平即水2'])
+        save_to_excel(style, project_path, file_name)

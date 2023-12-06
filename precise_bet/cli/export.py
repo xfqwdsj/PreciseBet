@@ -8,7 +8,7 @@ import pandas as pd
 from click_option_group import optgroup
 from precise_bet.data import match_status, save_to_csv, save_to_excel
 
-red = 'color: red;'
+result_color = 'color: #FF8080;'
 ya_hei = 'font-family: 微软雅黑;'
 calibri = 'font-family: Calibri;'
 tahoma = 'font-family: Tahoma;'
@@ -109,9 +109,9 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         data['赛事'] = data['赛事'].map(league['名称'])
 
         odd_style = f'{calibri}{ten_point}{center}{middle}'
-        style_win = [('background-color: #FC9D0D;' if r == '胜' else '') + odd_style for r in data['结果']]
-        style_draw = [('background-color: #FC9D0D;' if r == '平' else '') + odd_style for r in data['结果']]
-        style_lose = [('background-color: #FC9D0D;' if r == '负' else '') + odd_style for r in data['结果']]
+        style_win = [('background-color: #F4B084;' if r == '胜' else '') + odd_style for r in data['结果']]
+        style_draw = [('background-color: #F4B084;' if r == '平' else '') + odd_style for r in data['结果']]
+        style_lose = [('background-color: #F4B084;' if r == '负' else '') + odd_style for r in data['结果']]
 
         length = len(data)
         style = data.style
@@ -120,8 +120,8 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: [f'{nine_point}{middle}'] * length, subset=['轮次'])
         style.apply(lambda _: [f'{calibri}{nine_point}{middle}'] * length, subset=['比赛时间'])
         style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=['主队', '客队'])
-        style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
-        style.apply(lambda _: [f'{ya_hei}{red}{nine_point}{center}{middle}'] * length, subset=['结果'])
+        style.apply(lambda _: [f'{calibri}{result_color}{ten_point}{center}{middle}'] * length, subset=['比分'])
+        style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
         style.apply(lambda _: style_win, subset=['胜'])
         style.apply(lambda _: style_draw, subset=['平'])
         style.apply(lambda _: style_lose, subset=['负'])

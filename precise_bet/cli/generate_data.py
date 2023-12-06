@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import click
-
 from precise_bet.data import parse_table, save_to_csv
 from precise_bet.util import request_content
 
@@ -36,5 +35,6 @@ def generate_data(ctx, volume_number: int | None):
     save_to_csv(data_table.data, project_path / str(data_table.volume_number), 'data')
     save_to_csv(data_table.value, project_path / str(data_table.volume_number), 'value')
     save_to_csv(data_table.handicap, project_path / str(data_table.volume_number), 'handicap')
+    save_to_csv(data_table.odd, project_path / str(data_table.volume_number), 'odd')
     save_to_csv(data_table.league, project_path, 'league')
     save_to_csv(data_table.team, project_path, 'team')

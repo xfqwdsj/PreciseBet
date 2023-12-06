@@ -2,7 +2,7 @@
 
 import random
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -213,14 +213,14 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, ext
                 for column in ['主队', '客队']:
                     value = get_team_value(global_data.loc[match_id, column], ua)
                     after += [value]
-                    updated_time = datetime.now(timezone.utc).timestamp()
+                    updated_time = datetime.now().timestamp()
                     team_data.loc[global_data.loc[match_id, column], '价值'] = value
                     team_data.loc[global_data.loc[match_id, column], '更新时间'] = updated_time
                 data.loc[match_id, ['主队价值', '客队价值', '更新时间']] = after + [updated_time]
             elif action == 'handicap':
                 before = data.loc[match_id, ['平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2']].tolist()
                 after = get_match_handicap(match_id)
-                updated_time = datetime.now(timezone.utc).timestamp()
+                updated_time = datetime.now().timestamp()
                 data.loc[
                     match_id, ['平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间']] = after + [
                     updated_time]

@@ -8,11 +8,13 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 from bs4 import BeautifulSoup
+from regex import regex
 
 data_columns = ['代号', '场次', '赛事', '轮次', '比赛时间', '状态', '主队', '客队']
 value_columns = ['代号', '主队价值', '客队价值', '更新时间', '更新时比赛状态']
 handicap_columns = ['代号', '平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间',
                     '更新时比赛状态']
+odd_columns = ['代号', '胜', '平', '负', '更新时间', '更新时比赛状态']
 league_columns = ['代号', '名称', '颜色']
 team_columns = ['代号', '名称', '价值', '更新时间']
 
@@ -26,6 +28,7 @@ class DataTable:
     data: pd.DataFrame
     value: pd.DataFrame
     handicap: pd.DataFrame
+    odd: pd.DataFrame
     league: pd.DataFrame
     team: pd.DataFrame
 
@@ -38,6 +41,7 @@ def parse_table(project_path: Path, html: str) -> DataTable:
     data = pd.DataFrame(columns=data_columns).set_index('代号')
     value: pd.DataFrame
     handicap: pd.DataFrame
+    odd = pd.DataFrame(columns=odd_columns).set_index('代号')
     league: pd.DataFrame
     team: pd.DataFrame
 
@@ -107,8 +111,19 @@ def parse_table(project_path: Path, html: str) -> DataTable:
         else:
             team.loc[guest_id, '名称'] = guest_tag.text
 
+    odd_json = regex.search(r'var liveOddsList = ({.*});', html).group(1)
+    odd_dict = eval(odd_json)
+    updated_time = datetime.now().timestamp()
+    for match_id, odds in odd_dict.items():
+        match_id = f'a{match_id}'
+        odd_list = [0.0, 0.0, 0.0]
+        if '0' in odds:
+            odd_list = [float(i) for i in odds['0']]
+        odd.loc[match_id] = odd_list + [updated_time, data.loc[match_id, '状态']]
+
     data.sort_values(by='场次', inplace=True)
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
 
-    return DataTable(volume_number, data, value, handicap, league, team)
+    return DataTable(volume_number=volume_number, data=data, value=value, handicap=handicap, odd=odd, league=league,
+                     team=team)

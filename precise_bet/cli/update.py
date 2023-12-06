@@ -1,6 +1,7 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import random
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,12 @@ from precise_bet.data import save_to_csv, get_team_value, get_match_handicap, ma
 from precise_bet.util import sleep
 
 actions = {'value': '球队价值', 'handicap': '亚盘'}
+
+
+@dataclass
+class Interval:
+    seconds: int
+    extra: bool
 
 
 @click.command()
@@ -161,19 +168,30 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, ext
     action_name = actions[action]
     click.echo(f'开始更新{action_name}信息...')
 
-    long_interval_used_count = 0
     ua = UserAgent().random
 
+    interval_list: list[Interval] = []
+    extra_interval_count = 0
+    for i in range(len(processing_data) - 1):
+        delta = random.randint(-interval_offset_range, interval_offset_range)
+        if random.random() < extra_interval_probability:
+            interval_list.append(Interval(extra_interval + delta, True))
+            extra_interval_count += 1
+        else:
+            interval_list.append(Interval(interval + delta, False))
+
     start_time = datetime.now()
-    initial_eta = timedelta(
-        seconds=(interval * (1 - extra_interval_probability) + extra_interval * extra_interval_probability + 1) * (
-            len(processing_data)))
+
+    def get_eta(progress: int) -> timedelta:
+        return timedelta(seconds=sum([_i.seconds for _i in interval_list]) + (len(processing_data) - progress) * 2)
+
+    initial_eta = get_eta(0)
+
+    click.echo(f'本次更新将使用 {extra_interval_count} 次额外更新间隔')
 
     with click.progressbar(processing_data.index, show_eta=False, show_percent=True, show_pos=True) as indexes:
+        eta = initial_eta
         for index, match_id in enumerate(indexes):
-            eta = timedelta(seconds=(interval * (
-                    1 - extra_interval_probability) + extra_interval * extra_interval_probability + 1) * (
-                                            len(processing_data) - index))
             click.echo(f'   预计全部更新还需要 {eta}')
 
             host_name = team_data.loc[global_data.loc[match_id, '主队'], '名称']
@@ -227,12 +245,12 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, ext
             if index == len(processing_data) - 1:
                 break
 
-            if random.random() < extra_interval_probability:
-                click.secho(f'随机数命中，将使用额外更新间隔（概率：{extra_interval_probability}）', fg='yellow')
-                sleep(extra_interval, interval_offset_range)
-                long_interval_used_count += 1
-            else:
-                sleep(interval, interval_offset_range)
+            current_interval = interval_list[0]
+            if current_interval.extra:
+                click.secho('将使用额外更新间隔，请耐心等待', fg='yellow')
+            sleep(current_interval.seconds)
+            interval_list.pop(0)
+            eta = get_eta(index + 1)
 
             if random_ua:
                 ua = UserAgent().random
@@ -240,9 +258,8 @@ def update(ctx, action: str, debug: bool, volume_number: int, interval: int, ext
     used_time = datetime.now() - start_time
     click.echo(f'更新完成，用时 {used_time}，', nl=False)
     if used_time > initial_eta:
-        click.echo(f'{click.style("超出", fg="yellow")}预计时间 {used_time - initial_eta}，', nl=False)
+        click.echo(f'{click.style("超出", fg="yellow")}预计时间 {used_time - initial_eta}')
     elif used_time < initial_eta:
-        click.echo(f'{click.style("少于", fg="blue")}预计时间 {initial_eta - used_time}，', nl=False)
+        click.echo(f'{click.style("少于", fg="blue")}预计时间 {initial_eta - used_time}')
     else:
-        click.secho('正巧与预计时间相等，', fg='green', bold=True, nl=False)
-    click.echo(f'使用额外更新间隔 {long_interval_used_count} 次')
+        click.secho('正巧与预计时间相等', fg='green', bold=True)

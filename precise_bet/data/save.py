@@ -4,10 +4,11 @@ from pathlib import Path
 from typing import Callable
 
 import click
-import pandas as pd
+from pandas import DataFrame
+from pandas.io.formats.style import Styler
 
 
-def save(data: pd.DataFrame, path: Path, file_name: str, func: Callable):
+def save(data: DataFrame | Styler, path: Path, file_name: str, func: Callable):
     click.echo('正在保存数据...')
     if not path.exists():
         path.mkdir()
@@ -19,17 +20,17 @@ def save(data: pd.DataFrame, path: Path, file_name: str, func: Callable):
     func(data, file_path)
 
 
-def save_to_excel(data: pd.DataFrame, path: Path, file_name: str):
+def save_to_excel(data: DataFrame | Styler, path: Path, file_name: str):
     save(data, path, f'{file_name}.xlsx', excel_saver)
 
 
-def excel_saver(data: pd.DataFrame, path: Path):
+def excel_saver(data: DataFrame | Styler, path: Path):
     data.to_excel(path)
 
 
-def save_to_csv(data: pd.DataFrame, path: Path, file_name: str):
+def save_to_csv(data: DataFrame, path: Path, file_name: str):
     save(data, path, f'{file_name}.csv', csv_saver)
 
 
-def csv_saver(data: pd.DataFrame, path: Path):
+def csv_saver(data: DataFrame, path: Path):
     data.to_csv(path)

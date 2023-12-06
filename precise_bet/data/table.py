@@ -10,8 +10,9 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 data_columns = ['代号', '场次', '赛事', '轮次', '比赛时间', '状态', '主队', '客队']
-value_columns = ['代号', '主队价值', '客队价值', '更新时间', '已固定']
-handicap_columns = ['代号', '平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间', '已固定']
+value_columns = ['代号', '主队价值', '客队价值', '更新时间', '更新时比赛状态']
+handicap_columns = ['代号', '平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间',
+                    '更新时比赛状态']
 league_columns = ['代号', '颜色']
 team_columns = ['代号', '名称', '价值', '更新时间']
 
@@ -72,17 +73,29 @@ def parse_table(project_path: Path, html: str) -> DataTable:
         guest = tds[7].find('a')
         host_id = int(urlparse(host['href']).path.split('/')[2])
         guest_id = int(urlparse(guest['href']).path.split('/')[2])
-        match_time = datetime.strptime(str(volume_number)[:2] + tds[3].text, '%y%m-%d %H:%M')
+        match_time = datetime.strptime(f'{str(volume_number)[:2]}{tds[3].text}', '%y%m-%d %H:%M')
         match_timestamp = int(match_time.astimezone(ZoneInfo('Asia/Shanghai')).timestamp())
 
         data.loc[match_id] = [int(tds[0].text), tds[1].text, tds[2].text, match_timestamp, int(tr['status']), host_id,
                               guest_id]
 
         if match_id not in value.index:
-            value.loc[match_id] = [0, 0, -1.0, False]
+            value.loc[match_id] = [0, 0, -1.0, -1]
+        else:
+            # TODO: 数据结构更新时遗留方法，下个版本去除
+            if value.loc[match_id, '已固定']:
+                value.loc[match_id, '更新时比赛状态'] = 1
+            else:
+                value.loc[match_id, '更新时比赛状态'] = -1
 
         if match_id not in handicap.index:
-            handicap.loc[match_id] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, False]
+            handicap.loc[match_id] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1]
+        else:
+            # TODO: 数据结构更新时遗留方法，下个版本去除
+            if handicap.loc[match_id, '已固定']:
+                handicap.loc[match_id, '更新时比赛状态'] = 1
+            else:
+                handicap.loc[match_id, '更新时比赛状态'] = -1
 
         league_code = urlparse(tds[1].find('a')['href']).path.split('/')[1]
 
@@ -101,5 +114,11 @@ def parse_table(project_path: Path, html: str) -> DataTable:
     data.sort_values(by='场次', inplace=True)
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
+
+    # TODO: 数据结构更新时遗留方法，下个版本去除
+    if '已固定' in value.columns:
+        value.drop(columns='已固定', inplace=True)
+    if '已固定' in handicap.columns:
+        handicap.drop(columns='已固定', inplace=True)
 
     return DataTable(volume_number, data, value, handicap, league, team)

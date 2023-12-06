@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from regex import regex
 
 data_columns = ['代号', '场次', '赛事', '轮次', '比赛时间', '状态', '主队', '客队']
+score_columns = ['代号', '主队', '客队', '更新时间', '更新时比赛状态']
 value_columns = ['代号', '主队价值', '客队价值', '更新时间', '更新时比赛状态']
 handicap_columns = ['代号', '平即水1', '平即盘', '平即水2', '平初水1', '平初盘', '平初水2', '更新时间',
                     '更新时比赛状态']
@@ -26,6 +27,7 @@ match_status = {0: '未开始', 1: '上半场', 2: '中场', 3: '下半场', 4: 
 class DataTable:
     volume_number: int
     data: pd.DataFrame
+    score: pd.DataFrame
     value: pd.DataFrame
     handicap: pd.DataFrame
     odd: pd.DataFrame
@@ -39,6 +41,7 @@ def parse_table(project_path: Path, html: str) -> DataTable:
     volume_number = int(soup.find(id='sel_expect').text.strip())
 
     data = pd.DataFrame(columns=data_columns).set_index('代号')
+    score = pd.DataFrame(columns=score_columns).set_index('代号')
     value: pd.DataFrame
     handicap: pd.DataFrame
     odd = pd.DataFrame(columns=odd_columns).set_index('代号')
@@ -71,6 +74,8 @@ def parse_table(project_path: Path, html: str) -> DataTable:
 
     trs = soup.find('tbody').find_all('tr')
 
+    updated_time = datetime.now().timestamp()
+
     for tr in trs:
         if tr.has_attr('parentid'):
             continue
@@ -93,6 +98,13 @@ def parse_table(project_path: Path, html: str) -> DataTable:
         data.loc[match_id] = [int(tds[0].text), league_id, tds[2].text, match_timestamp, int(tr['status']), host_id,
                               guest_id]
 
+        score_tag = tds[6]
+        host_score_text = score_tag.find('a', attrs={'class': 'clt1'}).text
+        host_score = int(host_score_text if host_score_text != '' else 0)
+        guest_score_text = score_tag.find('a', attrs={'class': 'clt3'}).text
+        guest_score = int(guest_score_text if guest_score_text != '' else 0)
+        score.loc[match_id] = [host_score, guest_score, updated_time, data.loc[match_id, '状态']]
+
         if match_id not in value.index:
             value.loc[match_id] = [0, 0, -1.0, -1]
 
@@ -113,7 +125,6 @@ def parse_table(project_path: Path, html: str) -> DataTable:
 
     odd_json = regex.search(r'var liveOddsList = ({.*});', html).group(1)
     odd_dict = eval(odd_json)
-    updated_time = datetime.now().timestamp()
     for match_id, odds in odd_dict.items():
         match_id = f'a{match_id}'
         odd_list = [0.0, 0.0, 0.0]
@@ -125,5 +136,5 @@ def parse_table(project_path: Path, html: str) -> DataTable:
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
 
-    return DataTable(volume_number=volume_number, data=data, value=value, handicap=handicap, odd=odd, league=league,
-                     team=team)
+    return DataTable(volume_number=volume_number, data=data, score=score, value=value, handicap=handicap, odd=odd,
+                     league=league, team=team)

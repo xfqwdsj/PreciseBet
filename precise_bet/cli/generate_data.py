@@ -33,6 +33,7 @@ def generate_data(ctx, volume_number: int | None):
     click.echo(f'解析成功，期数：{data_table.volume_number}')
 
     save_to_csv(data_table.data, project_path / str(data_table.volume_number), 'data')
+    save_to_csv(data_table.score, project_path / str(data_table.volume_number), 'score')
     save_to_csv(data_table.value, project_path / str(data_table.volume_number), 'value')
     save_to_csv(data_table.handicap, project_path / str(data_table.volume_number), 'handicap')
     save_to_csv(data_table.odd, project_path / str(data_table.volume_number), 'odd')

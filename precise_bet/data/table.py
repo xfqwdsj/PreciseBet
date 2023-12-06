@@ -81,21 +81,9 @@ def parse_table(project_path: Path, html: str) -> DataTable:
 
         if match_id not in value.index:
             value.loc[match_id] = [0, 0, -1.0, -1]
-        else:
-            # TODO: 数据结构更新时遗留方法，下个版本去除
-            if value.loc[match_id, '已固定']:
-                value.loc[match_id, '更新时比赛状态'] = 1
-            else:
-                value.loc[match_id, '更新时比赛状态'] = -1
 
         if match_id not in handicap.index:
             handicap.loc[match_id] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1]
-        else:
-            # TODO: 数据结构更新时遗留方法，下个版本去除
-            if handicap.loc[match_id, '已固定']:
-                handicap.loc[match_id, '更新时比赛状态'] = 1
-            else:
-                handicap.loc[match_id, '更新时比赛状态'] = -1
 
         league_code = urlparse(tds[1].find('a')['href']).path.split('/')[1]
 
@@ -114,11 +102,5 @@ def parse_table(project_path: Path, html: str) -> DataTable:
     data.sort_values(by='场次', inplace=True)
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
-
-    # TODO: 数据结构更新时遗留方法，下个版本去除
-    if '已固定' in value.columns:
-        value.drop(columns='已固定', inplace=True)
-    if '已固定' in handicap.columns:
-        handicap.drop(columns='已固定', inplace=True)
 
     return DataTable(volume_number, data, value, handicap, league, team)

@@ -9,6 +9,9 @@ from click_option_group import optgroup
 from precise_bet.data import match_status, save_to_csv, save_to_excel
 
 result_color = 'color: #FF8080;'
+handicap_background_color = 'background-color: #E1E9F0;'
+handicap_highlight_color = 'background-color: #D7327D;'
+odd_background_color = 'background-color: #F4B084;'
 ya_hei = 'font-family: 微软雅黑;'
 calibri = 'font-family: Calibri;'
 tahoma = 'font-family: Tahoma;'
@@ -108,10 +111,20 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
                                                       f'{ya_hei}{nine_point}{center}{middle}')
         data['赛事'] = data['赛事'].map(league['名称'])
 
+        handicap_style = []
+        for match_id in data.index:
+            color = handicap_background_color
+            if data.loc[match_id, '平即盘'] > 0:
+                color = handicap_highlight_color
+            elif data.loc[match_id, '平即盘'] == 0:
+                if data.loc[match_id, '平初盘'] > 0:
+                    color = handicap_background_color
+            handicap_style.append(f'{color}{tahoma}{nine_point}{center}{middle}')
+
         odd_style = f'{calibri}{ten_point}{center}{middle}'
-        style_win = [('background-color: #F4B084;' if r == '胜' else '') + odd_style for r in data['结果']]
-        style_draw = [('background-color: #F4B084;' if r == '平' else '') + odd_style for r in data['结果']]
-        style_lose = [('background-color: #F4B084;' if r == '负' else '') + odd_style for r in data['结果']]
+        win_style = [(odd_background_color if r == '胜' else '') + odd_style for r in data['结果']]
+        draw_style = [(odd_background_color if r == '平' else '') + odd_style for r in data['结果']]
+        lose_style = [(odd_background_color if r == '负' else '') + odd_style for r in data['结果']]
 
         length = len(data)
         style = data.style
@@ -122,10 +135,9 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=['主队', '客队'])
         style.apply(lambda _: [f'{calibri}{result_color}{ten_point}{center}{middle}'] * length, subset=['比分'])
         style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
-        style.apply(lambda _: style_win, subset=['胜'])
-        style.apply(lambda _: style_draw, subset=['平'])
-        style.apply(lambda _: style_lose, subset=['负'])
+        style.apply(lambda _: win_style, subset=['胜'])
+        style.apply(lambda _: draw_style, subset=['平'])
+        style.apply(lambda _: lose_style, subset=['负'])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=['主队价值', '客队价值'])
-        style.apply(lambda _: [f'{tahoma}{nine_point}{center}{middle}'] * length,
-                    subset=['平初水1', '平初盘', '平初水2', '平即水1', '平即盘', '平即水2'])
+        style.apply(lambda _: handicap_style, subset=['平初水1', '平初盘', '平初水2', '平即水1', '平即盘', '平即水2'])
         save_to_excel(style, project_path, file_name)

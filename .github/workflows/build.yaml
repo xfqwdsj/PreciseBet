@@ -23,10 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-tags: true
-
-      - name: Get tags
-        run: git fetch --tags origin
+          fetch-depth: 0
 
       - name: Install Poetry
         run: pipx install poetry

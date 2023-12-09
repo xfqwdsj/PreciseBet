@@ -18,6 +18,7 @@ fake-useragent = "^1.4.0"
 beautifulsoup4 = "^4.12.2"
 click-option-group = "^0.5.6"
 tzdata = "^2023.3"
+numpy = "^1.26.2"
 
 
 [tool.poetry.group.dev.dependencies]

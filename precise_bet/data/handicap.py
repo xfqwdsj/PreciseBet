@@ -10,10 +10,10 @@ def parse(td: Tag) -> list[float]:
     return [float(data_td[0].text), float(data_td[1].text), float(data_td[2].text)]
 
 
-def get_match_handicap(match_id: str) -> list[float]:
+def get_match_handicap(match_id: str, ua: str) -> list[float]:
     url = 'https://odds.500.com/fenxi/yazhi-' + match_id[1:] + '.shtml'
 
-    text = request_content(url)
+    text = request_content(url, ua)
 
     soup = BeautifulSoup(text, 'html.parser')
 

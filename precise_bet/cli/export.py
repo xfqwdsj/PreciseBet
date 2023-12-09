@@ -6,8 +6,11 @@ from pathlib import Path
 import click
 import pandas as pd
 from click_option_group import optgroup
-from precise_bet.data import match_status, save_to_csv, save_to_excel
 
+from precise_bet.data import match_status, save_to_csv, MatchTable, LeagueTable, TeamTable, DataTable, ScoreTable, \
+    ValueTable, HandicapTable, OddTable, save_message
+
+red = 'color: #FF0000;'
 result_color = 'color: #FF8080;'
 handicap_background_color = 'background-color: #E1E9F0;'
 handicap_highlight_color = 'background-color: #D7327D;'
@@ -39,10 +42,10 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
 
     click.echo('开始导出数据...')
 
-    data = pd.DataFrame(columns=['代号']).set_index('代号')
+    data = pd.DataFrame(columns=[MatchTable.match_id]).set_index(MatchTable.match_id)
 
-    league = pd.read_csv(project_path / 'league.csv', index_col='代号')
-    team = pd.read_csv(project_path / 'team.csv', index_col='代号')
+    league = LeagueTable(project_path).read()
+    team = TeamTable(project_path).read()
 
     for volume in project_path.iterdir():
         if not volume.is_dir():
@@ -52,11 +55,11 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
 
         click.echo(f'正在处理第 {volume_number} 期数据...')
 
-        volume_data = pd.read_csv(volume / 'data.csv', index_col='代号')
-        score = pd.read_csv(volume / 'score.csv', index_col='代号')
-        value = pd.read_csv(volume / 'value.csv', index_col='代号')
-        handicap = pd.read_csv(volume / 'handicap.csv', index_col='代号')
-        odd = pd.read_csv(volume / 'odd.csv', index_col='代号')
+        volume_data = DataTable(project_path, volume_number).read()
+        score = ScoreTable(project_path, volume_number).read()
+        value = ValueTable(project_path, volume_number).read()
+        handicap = HandicapTable(project_path, volume_number).read()
+        odd = OddTable(project_path, volume_number).read()
 
         def calculate_result(score_text: str):
             score_list = score_text.split('-')
@@ -70,54 +73,47 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
                 return '负'
 
         volume_data.insert(0, '期数', volume_number)
-        volume_data.insert(7, '比分',
-                           score['主队'].astype(int).astype(str) + ' - ' + score['客队'].astype(int).astype(str))
-        volume_data['胜'] = odd['胜']
-        volume_data['平'] = odd['平']
-        volume_data['负'] = odd['负']
+        volume_data.insert(8, '比分',
+                           score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str))
+        volume_data[OddTable.class_columns()] = odd[OddTable.class_columns()]
         volume_data['结果'] = volume_data['比分'].apply(calculate_result)
-        volume_data['主队价值'] = value['主队价值']
-        volume_data['客队价值'] = value['客队价值']
-        volume_data['平即水1'] = handicap['平即水1']
-        volume_data['平即盘'] = handicap['平即盘']
-        volume_data['平即水2'] = handicap['平即水2']
+        volume_data.loc[volume_data[DataTable.match_status] != 4, ['比分', '结果']] = ''
+        volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
+        volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
         if special_format:
             volume_data['空列1'] = ''
             volume_data['空列2'] = ''
-        volume_data['平初水1'] = handicap['平初水1']
-        volume_data['平初盘'] = handicap['平初盘']
-        volume_data['平初水2'] = handicap['平初水2']
+        volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
 
         data = pd.concat([data, volume_data])
 
     timezone = datetime.now().astimezone().tzinfo
 
-    data['比赛时间'] = pd.to_datetime(data['比赛时间'], unit='s', utc=True).dt.tz_convert(timezone)
-    data['主队'] = data['主队'].map(team['名称'])
-    data['客队'] = data['客队'].map(team['名称'])
+    data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)
+    data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
-    status = data['状态'].map(match_status)
+    status = data[DataTable.match_status].map(match_status)
     if special_format:
-        data.drop(columns=['状态'], inplace=True)
-    data['状态'] = status
+        data.drop(columns=[DataTable.match_status], inplace=True)
+    data[DataTable.match_status] = status
 
     if file_format == 'csv':
-        data['赛事'] = data['赛事'].map(league['名称'])
+        data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
         save_to_csv(data, project_path, file_name)
     elif file_format == 'excel':
-        data['比赛时间'] = data['比赛时间'].dt.tz_localize(None)
-        league_styles = data['赛事'].map(league['颜色'])
+        data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
+        league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
         league_styles = league_styles.apply(lambda x: f'color: white;background-color: {x};'
                                                       f'{ya_hei}{nine_point}{center}{middle}')
-        data['赛事'] = data['赛事'].map(league['名称'])
+        data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
 
         handicap_style = []
         for match_id in data.index:
             color = handicap_background_color
-            if data.loc[match_id, '平即盘'] > 0:
+            if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
                 color = handicap_highlight_color
-            elif data.loc[match_id, '平即盘'] == 0:
-                if data.loc[match_id, '平初盘'] > 0:
+            elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
+                if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                     color = handicap_background_color
             handicap_style.append(f'{color}{tahoma}{nine_point}{center}{middle}')
 
@@ -128,16 +124,52 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
 
         length = len(data)
         style = data.style
-        style.apply(lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length, subset=['期数', '场次'])
-        style.apply(lambda _: league_styles, subset=['赛事'])
-        style.apply(lambda _: [f'{nine_point}{middle}'] * length, subset=['轮次'])
-        style.apply(lambda _: [f'{calibri}{nine_point}{middle}'] * length, subset=['比赛时间'])
-        style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=['主队', '客队'])
-        style.apply(lambda _: [f'{calibri}{result_color}{ten_point}{center}{middle}'] * length, subset=['比分'])
+        style.apply(lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length,
+                    subset=['期数', DataTable.match_number])
+        style.apply(lambda _: league_styles, subset=[DataTable.league_id])
+        style.apply(lambda _: [f'{nine_point}{left}{middle}'] * length, subset=[DataTable.round_number])
+        style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])
+        style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=[DataTable.host_name, DataTable.guest_name])
+        style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
         style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
-        style.apply(lambda _: win_style, subset=['胜'])
-        style.apply(lambda _: draw_style, subset=['平'])
-        style.apply(lambda _: lose_style, subset=['负'])
-        style.apply(lambda _: [f'{left}{middle}'] * length, subset=['主队价值', '客队价值'])
-        style.apply(lambda _: handicap_style, subset=['平初水1', '平初盘', '平初水2', '平即水1', '平即盘', '平即水2'])
-        save_to_excel(style, project_path, file_name)
+        style.apply(lambda _: win_style, subset=[OddTable.win])
+        style.apply(lambda _: draw_style, subset=[OddTable.draw])
+        style.apply(lambda _: lose_style, subset=[OddTable.lose])
+        style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
+        style.apply(lambda _: handicap_style,
+                    subset=HandicapTable.class_columns() + (['空列1', '空列2'] if special_format else []))
+
+        path = project_path / f'{file_name}.xlsx'
+
+        writer = pd.ExcelWriter(path)
+
+        style.to_excel(writer, sheet_name='Sheet')
+
+        worksheet = writer.sheets['Sheet']
+
+        for cell in worksheet['F']:
+            cell.number_format = 'yyyy/mm/dd hh:mm'
+
+        worksheet.column_dimensions['F'].width = 15
+
+        handicap_start = chr(ord('Q') + (-1 if special_format else 0))
+        handicap_end = chr(ord('V') + (1 if special_format else 0))
+
+        for cells in worksheet[f'{handicap_start}:{handicap_end}']:
+            for cell in cells:
+                cell.number_format = '0.000'
+
+        worksheet.column_dimensions[chr(ord('H') + (-1 if special_format else 0))].width = 20
+        worksheet.column_dimensions[chr(ord('J') + (-1 if special_format else 0))].width = 20
+
+        for i in range(3):
+            worksheet.column_dimensions[chr(ord('K') + i + (-1 if special_format else 0))].width = 6
+
+        for i in range(6 if not special_format else 8):
+            worksheet.column_dimensions[chr(ord('Q') + i + (-1 if special_format else 0))].width = 6
+
+        if special_format:
+            for i in range(2):
+                worksheet.column_dimensions[chr(ord('S') + i)].width = 0.001
+
+        save_message(path, lambda: writer.close())

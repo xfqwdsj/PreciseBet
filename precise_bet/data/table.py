@@ -360,10 +360,12 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         league_tag = tds[1]
         league_id = urlparse(league_tag.find('a')['href']).path.split('/')[1]
 
-        host_tag = tds[5]
-        guest_tag = tds[7]
-        host_id = int(urlparse(host_tag.find('a')['href']).path.split('/')[2])
-        guest_id = int(urlparse(guest_tag.find('a')['href']).path.split('/')[2])
+        host_full_tag = tds[5]
+        guest_full_tag = tds[7]
+        host_tag = host_full_tag.find('a')
+        guest_tag = guest_full_tag.find('a')
+        host_id = int(urlparse(host_tag['href']).path.split('/')[2])
+        guest_id = int(urlparse(guest_tag['href']).path.split('/')[2])
 
         match_time = datetime.strptime(f'{str(volume_number)[:2]}{tds[3].text}', '%y%m-%d %H:%M')
         match_timestamp = int(match_time.astimezone(ZoneInfo('Asia/Shanghai')).timestamp())
@@ -371,8 +373,8 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         data.loc[match_id] = DataTable.generate_row(match_number=int(tds[0].text), league_id=league_id,
                                                     round_number=tds[2].text, match_time=match_timestamp,
                                                     match_status=int(tr['status']), host_id=host_id,
-                                                    host_name=host_tag.text, guest_id=guest_id,
-                                                    guest_name=guest_tag.text)
+                                                    host_name=host_full_tag.text, guest_id=guest_id,
+                                                    guest_name=guest_full_tag.text)
 
         score_tag = tds[6]
         host_score_text = score_tag.find('a', attrs={'class': 'clt1'}).text

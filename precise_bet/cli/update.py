@@ -191,17 +191,17 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
     if debug:
         save_to_csv(processing_data, project_path, 'processing')
 
-    dataanalysis = pd.DataFrame(columns=['数量'])
-    dataanalysis.loc['全部'] = len(processing_data)
-    dataanalysis.loc['从未获取'] = len(processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0])
+    data_analysis = pd.DataFrame(columns=['数量'])
+    data_analysis.loc['全部'] = len(processing_data)
+    data_analysis.loc['从未获取'] = len(processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0])
     for status in processing_data[DataTable.match_status].unique():
-        dataanalysis.loc[match_status[status]] = len(
+        data_analysis.loc[match_status[status]] = len(
             processing_data.loc[processing_data[DataTable.match_status] == status])
 
     click.echo()
 
     click.echo('处理数据分析：')
-    click.echo(dataanalysis)
+    click.echo(data_analysis)
 
     click.echo()
 

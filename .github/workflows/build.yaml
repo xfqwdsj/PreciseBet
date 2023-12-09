@@ -37,6 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry dynamic-versioning enable
           poetry install
 
       - name: Build program

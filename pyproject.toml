@@ -28,7 +28,6 @@ semver = "^3.0.2"
 
 
 [tool.poetry-dynamic-versioning]
-enable = true
 vcs = "git"
 metadata = true
 dirty = true

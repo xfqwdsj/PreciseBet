@@ -12,7 +12,7 @@ import precise_bet
 
 
 def build():
-    os.system('poetry dynamic-versioning')
+    # os.system('poetry dynamic-versioning')
     # 使用命令方式调用，使动态版本在代码中更新的值生效
     os.system(f'{sys.executable} -c "from precise_bet import build; build.start_building()"')
 

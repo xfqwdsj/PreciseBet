@@ -36,7 +36,6 @@ def is_excel(file_format: str):
 @optgroup.option('--file-name', '-n', help='导出文件名', default='data', type=str)
 @optgroup.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
                  type=click.Choice(['csv', 'excel', 'special']))
-@optgroup.group('其他选项', help='其他选项')
 def export(ctx, file_name: str, file_format: str):
     """
     导出数据
@@ -84,11 +83,11 @@ def export(ctx, file_name: str, file_format: str):
         volume_data.loc[
             volume_data[DataTable.match_status] != 4, ['比分', '结果']] = '-' if file_format == 'csv' else ''
         volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
-        volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
+        volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
         if file_format == 'special':
             volume_data['空列1'] = ''
             volume_data['空列2'] = ''
-        volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
+        volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
         data = pd.concat([data, volume_data])
 
@@ -174,35 +173,37 @@ def export(ctx, file_name: str, file_format: str):
 
         path = project_path / f'{file_name}.xlsx'
 
+        columns = {column: chr(ord('B') + index) for index, column in enumerate(style.data.columns.values)}
+
         writer = pd.ExcelWriter(path)
 
         style.to_excel(writer, sheet_name=exported_time)
 
         worksheet = writer.sheets[exported_time]
 
-        for cell in worksheet['F']:
+        for cell in worksheet[columns[DataTable.match_time]]:
             cell.number_format = 'yyyy/m/d h:mm'
 
-        worksheet.column_dimensions['F'].width = 15
+        worksheet.column_dimensions[columns[DataTable.match_time]].width = 15
 
-        handicap_start = chr(ord('R') + (-2 if file_format == 'special' else 0))
-        handicap_end = 'W'
+        handicap_start = columns[HandicapTable.live_average_water1]
+        handicap_end = columns[HandicapTable.early_average_water2]
 
         for cells in worksheet[f'{handicap_start}:{handicap_end}']:
             for cell in cells:
                 cell.number_format = '0.000'
 
-        worksheet.column_dimensions[chr(ord('H') + (-1 if file_format == 'special' else 0))].width = 20
-        worksheet.column_dimensions[chr(ord('J') + (-1 if file_format == 'special' else 0))].width = 20
+        worksheet.column_dimensions[columns[DataTable.host_name]].width = 20
+        worksheet.column_dimensions[columns[DataTable.guest_name]].width = 20
 
         for i in range(3):
-            worksheet.column_dimensions[chr(ord('L') + i + (-2 if file_format == 'special' else 0))].width = 6
+            worksheet.column_dimensions[chr(ord(columns[OddTable.win]) + i)].width = 6
 
         for i in range(6 if not file_format == 'special' else 8):
-            worksheet.column_dimensions[handicap_start].width = 6
+            worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6
 
         if file_format == 'special':
             for i in range(2):
-                worksheet.column_dimensions[chr(ord('S') + i)].width = 0.001
+                worksheet.column_dimensions[chr(ord(columns['空列1']) + i)].width = 0.001
 
         save_message(path, lambda: writer.close())

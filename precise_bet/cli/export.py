@@ -77,10 +77,11 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
                            score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str))
         volume_data[OddTable.class_columns()] = odd[OddTable.class_columns()]
         volume_data['结果'] = volume_data['比分'].apply(calculate_result)
-        volume_data.loc[volume_data[DataTable.match_status] != 4, ['比分', '结果']] = ''
+        volume_data.loc[
+            volume_data[DataTable.match_status] != 4, ['比分', '结果']] = '-' if file_format == 'csv' else ''
         volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
         volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
-        if special_format:
+        if file_format == 'excel' and special_format:
             volume_data['空列1'] = ''
             volume_data['空列2'] = ''
         volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]

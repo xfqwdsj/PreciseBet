@@ -123,10 +123,10 @@ def export(ctx, file_name: str, file_format: str):
             empty_column_style = []
         for match_id in data.index:
             color = ''
-            if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
+            if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
                 color = handicap_highlight_color
-            elif data.loc[match_id, HandicapTable.early_average_handicap] == 0:
-                if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
+            elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
+                if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                     color = handicap_highlight_color
             if file_format == 'special':
                 # noinspection PyUnboundLocalVariable

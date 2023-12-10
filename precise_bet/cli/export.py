@@ -26,15 +26,18 @@ left = 'text-align: left;'
 middle = 'vertical-align: middle;'
 
 
+def is_excel(file_format: str):
+    return file_format == 'excel' or file_format == 'special'
+
+
 @click.command()
 @click.pass_context
 @optgroup.group('导出选项', help='指定导出时使用的选项')
 @optgroup.option('--file-name', '-n', help='导出文件名', default='data', type=str)
 @optgroup.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
-                 type=click.Choice(['csv', 'excel']))
+                 type=click.Choice(['csv', 'excel', 'special']))
 @optgroup.group('其他选项', help='其他选项')
-@optgroup.option('--special-format', '-s', help='使用特殊格式', is_flag=True)
-def export(ctx, file_name: str, file_format: str, special_format: bool):
+def export(ctx, file_name: str, file_format: str):
     """
     导出数据
     """
@@ -82,7 +85,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
             volume_data[DataTable.match_status] != 4, ['比分', '结果']] = '-' if file_format == 'csv' else ''
         volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
         volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
-        if file_format == 'excel' and special_format:
+        if file_format == 'special':
             volume_data['空列1'] = ''
             volume_data['空列2'] = ''
         volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
@@ -95,20 +98,20 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
     half_score = data[DataTable.half_score]
-    if file_format == 'excel':
+    if is_excel(file_format):
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
     data.drop(columns=[DataTable.half_score], inplace=True)
     data[DataTable.half_score] = half_score
 
     status = data[DataTable.match_status].map(match_status)
-    if special_format:
+    if file_format == 'special':
         data.drop(columns=[DataTable.match_status], inplace=True)
     data[DataTable.match_status] = status
 
     if file_format == 'csv':
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
         save_to_csv(data, project_path, file_name)
-    elif file_format == 'excel':
+    elif is_excel(file_format):
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
         league_styles = league_styles.apply(lambda x: f'color: white;background-color: {x};'
@@ -116,7 +119,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
 
         handicap_style = []
-        if special_format:
+        if file_format == 'special':
             empty_column_style = []
         for match_id in data.index:
             color = ''
@@ -125,7 +128,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
             elif data.loc[match_id, HandicapTable.early_average_handicap] == 0:
                 if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
                     color = handicap_highlight_color
-            if special_format:
+            if file_format == 'special':
                 # noinspection PyUnboundLocalVariable
                 empty_column_style.append(color)
             if color == '':
@@ -154,7 +157,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: lose_style, subset=[OddTable.lose])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
-        if special_format:
+        if file_format == 'special':
             def add_zeros(number: int):
                 if number < 10:
                     return '00' + str(number)
@@ -181,23 +184,23 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
 
         worksheet.column_dimensions['F'].width = 15
 
-        handicap_start = chr(ord('Q') + (-1 if special_format else 0))
-        handicap_end = chr(ord('V') + (1 if special_format else 0))
+        handicap_start = chr(ord('Q') + (-1 if file_format == 'special' else 0))
+        handicap_end = chr(ord('V') + (1 if file_format == 'special' else 0))
 
         for cells in worksheet[f'{handicap_start}:{handicap_end}']:
             for cell in cells:
                 cell.number_format = '0.000'
 
-        worksheet.column_dimensions[chr(ord('H') + (-1 if special_format else 0))].width = 20
-        worksheet.column_dimensions[chr(ord('J') + (-1 if special_format else 0))].width = 20
+        worksheet.column_dimensions[chr(ord('H') + (-1 if file_format == 'special' else 0))].width = 20
+        worksheet.column_dimensions[chr(ord('J') + (-1 if file_format == 'special' else 0))].width = 20
 
         for i in range(3):
-            worksheet.column_dimensions[chr(ord('K') + i + (-1 if special_format else 0))].width = 6
+            worksheet.column_dimensions[chr(ord('K') + i + (-1 if file_format == 'special' else 0))].width = 6
 
-        for i in range(6 if not special_format else 8):
-            worksheet.column_dimensions[chr(ord('Q') + i + (-1 if special_format else 0))].width = 6
+        for i in range(6 if not file_format == 'special' else 8):
+            worksheet.column_dimensions[chr(ord('Q') + i + (-1 if file_format == 'special' else 0))].width = 6
 
-        if special_format:
+        if file_format == 'special':
             for i in range(2):
                 worksheet.column_dimensions[chr(ord('S') + i)].width = 0.001
 

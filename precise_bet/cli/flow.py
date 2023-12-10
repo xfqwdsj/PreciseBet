@@ -21,4 +21,4 @@ def flow(ctx, volume_number: int, full_update: bool, extra_interval_probability:
                    extra_interval_probability=extra_interval_probability, only_new=True)
     ctx.invoke(precise_bet.cli.update, action=UpdateActions.handicap.value, volume_number=volume_number,
                extra_interval_probability=extra_interval_probability)
-    ctx.invoke(precise_bet.cli.export, file_format='excel', special_format=True)
+    ctx.invoke(precise_bet.cli.export, file_format='special')

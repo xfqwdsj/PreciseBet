@@ -206,6 +206,10 @@ def export(ctx, file_name: str, file_format: str):
 
         worksheet.column_dimensions[columns[DataTable.match_time]].width = 15
 
+        for cells in worksheet[f'{columns[OddTable.win]}:{columns[OddTable.lose]}']:
+            for cell in cells:
+                cell.number_format = '0.00'
+
         handicap_start = columns[HandicapTable.live_average_water1]
         handicap_end = columns[HandicapTable.early_average_water2]
 

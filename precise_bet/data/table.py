@@ -318,6 +318,9 @@ class TeamTable(ProjectTable, NamedTable, UpdatableTable):
     def row_from_value(cls, value: int):
         return cls.generate_row(value=value).append_updated_time()
 
+    def update_from_value(self, team_id: int, value: int):
+        self.update_row(team_id, self.row_from_value(value))
+
 
 @dataclass
 class DataSet:

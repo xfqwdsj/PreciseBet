@@ -139,16 +139,18 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: handicap_style,
                     subset=HandicapTable.class_columns() + (['空列1', '空列2'] if special_format else []))
 
+        exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')
+
         path = project_path / f'{file_name}.xlsx'
 
         writer = pd.ExcelWriter(path)
 
-        style.to_excel(writer, sheet_name='Sheet')
+        style.to_excel(writer, sheet_name=exported_time)
 
-        worksheet = writer.sheets['Sheet']
+        worksheet = writer.sheets[exported_time]
 
         for cell in worksheet['F']:
-            cell.number_format = 'yyyy/mm/dd hh:mm'
+            cell.number_format = 'yyyy/m/d h:mm'
 
         worksheet.column_dimensions['F'].width = 15
 

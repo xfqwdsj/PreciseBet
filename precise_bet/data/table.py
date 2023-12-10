@@ -59,8 +59,7 @@ class Table(pd.DataFrame, ABC):
 
     @classmethod
     def class_pairs(cls) -> dict[str, Column]:
-        return {i: vars(cls)[i] for i in vars(cls) if
-                not i.endswith('_') and isinstance(vars(cls)[i], Column)}
+        return {i: vars(cls)[i] for i in vars(cls) if not i.endswith('_') and isinstance(vars(cls)[i], Column)}
 
     @classmethod
     def class_columns(cls) -> list[Column]:
@@ -298,8 +297,20 @@ class LeagueTable(ProjectTable, NamedTable):
 
     league_id = Column('代号', str, ColumnOrder.index)
     color = Column('颜色', str)
+    type = Column('类型', pd.CategoricalDtype(categories=['league', 'cup', 'unknown']))
 
     index_ = league_id
+
+    @classmethod
+    def empty_row(cls, name: str, color: str):
+        return cls.generate_row(name=name, color=color, type='unknown')
+
+    def update_name_and_color(self, league_id: str, name: str, color: str):
+        self.loc[league_id, LeagueTable.name] = name
+        self.loc[league_id, LeagueTable.color] = color
+
+    def update_type(self, league_id: str, league_type: str):
+        self.loc[league_id, LeagueTable.type] = league_type
 
 
 class TeamTable(ProjectTable, NamedTable, UpdatableTable):
@@ -393,7 +404,10 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         if match_id not in handicap.index:
             handicap.loc[match_id] = HandicapTable.empty_row()
 
-        league.loc[league_id] = LeagueTable.generate_row(name=league_tag.text, color=league_tag['bgcolor'])
+        if league_id not in league.index:
+            league.loc[league_id] = LeagueTable.empty_row(name=league_tag.text, color=league_tag['bgcolor'])
+        else:
+            league.update_name_and_color(league_id, league_tag.text, league_tag['bgcolor'])
 
         if host_id not in team.index:
             team.loc[host_id] = TeamTable.empty_row(host_tag.text)

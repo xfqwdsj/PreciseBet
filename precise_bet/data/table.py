@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 # noinspection PyProtectedMember
 from pandas._typing import Dtype
 from regex import regex
@@ -345,7 +345,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
     league = LeagueTable(project_path).read_or_create()
     team = TeamTable(project_path).read_or_create()
 
-    trs = soup.find('tbody').find_all('tr')
+    trs: list[Tag] = soup.find('tbody').find_all('tr')
 
     updated_time = datetime.now().timestamp()
 
@@ -355,7 +355,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
 
         match_id = tr['id']
 
-        tds = tr.find_all('td')
+        tds: list[Tag] = tr.find_all('td')
 
         league_tag = tds[1]
         league_id = urlparse(league_tag.find('a')['href']).path.split('/')[1]

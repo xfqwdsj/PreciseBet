@@ -52,9 +52,9 @@ class ValueAction(Action[ValueTable]):
         for team_id_column in [DataTable.host_id, DataTable.guest_id]:
             value = get_team_value(global_data.loc[match_id, team_id_column], ua)
             after += [value]
-            team_data.loc[global_data.loc[match_id, team_id_column]] = team_data.row_from_value(value)
+            team_data.update_from_value(global_data.loc[match_id, team_id_column], value)
             team_data.save()
-        self.table.loc[match_id] = self.table.row_from_list(after, global_data.loc[match_id, DataTable.match_status])
+        self.table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
         self.table.save()
         return before, after
 
@@ -69,7 +69,7 @@ class HandicapAction(Action[HandicapTable]):
     def update(self, match_id: str, global_data: DataTable, ua: str, **_):
         before = self.table.get_data(match_id)
         after = get_match_handicap(match_id, ua)
-        self.table.loc[match_id] = HandicapTable.row_from_list(after, global_data.loc[match_id, DataTable.match_status])
+        self.table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
         self.table.save()
         return before, after
 

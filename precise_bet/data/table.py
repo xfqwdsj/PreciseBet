@@ -100,8 +100,6 @@ class Table(pd.DataFrame, ABC):
         return result
 
     def update_row(self, row_id: Any, row: Row):
-        if not isinstance(row_id, self.index_.type):
-            raise TypeError(f'索引类型错误，应为 {self.index_.type}，实际为 {type(row_id)}')
         for column in row:
             if column not in self:
                 raise KeyError(f'在更新一行时，未找到名为 {column} 的列')

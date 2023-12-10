@@ -100,7 +100,8 @@ def export(ctx, file_name: str, file_format: str):
     half_score = data[DataTable.half_score]
     if is_excel(file_format):
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
-    data.drop(columns=[DataTable.half_score], inplace=True)
+    if file_format == 'special':
+        data.drop(columns=[DataTable.half_score], inplace=True)
     data[DataTable.half_score] = half_score
 
     status = data[DataTable.match_status].map(match_status)
@@ -184,8 +185,8 @@ def export(ctx, file_name: str, file_format: str):
 
         worksheet.column_dimensions['F'].width = 15
 
-        handicap_start = chr(ord('Q') + (-1 if file_format == 'special' else 0))
-        handicap_end = chr(ord('V') + (1 if file_format == 'special' else 0))
+        handicap_start = chr(ord('R') + (-2 if file_format == 'special' else 0))
+        handicap_end = 'W'
 
         for cells in worksheet[f'{handicap_start}:{handicap_end}']:
             for cell in cells:
@@ -195,10 +196,10 @@ def export(ctx, file_name: str, file_format: str):
         worksheet.column_dimensions[chr(ord('J') + (-1 if file_format == 'special' else 0))].width = 20
 
         for i in range(3):
-            worksheet.column_dimensions[chr(ord('K') + i + (-1 if file_format == 'special' else 0))].width = 6
+            worksheet.column_dimensions[chr(ord('L') + i + (-2 if file_format == 'special' else 0))].width = 6
 
         for i in range(6 if not file_format == 'special' else 8):
-            worksheet.column_dimensions[chr(ord('Q') + i + (-1 if file_format == 'special' else 0))].width = 6
+            worksheet.column_dimensions[handicap_start].width = 6
 
         if file_format == 'special':
             for i in range(2):

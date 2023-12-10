@@ -108,13 +108,20 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
 
         handicap_style = []
+        if special_format:
+            empty_column_style = []
         for match_id in data.index:
-            color = handicap_background_color
+            color = ''
             if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                 color = handicap_highlight_color
             elif data.loc[match_id, HandicapTable.early_average_handicap] == 0:
                 if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
                     color = handicap_highlight_color
+            if special_format:
+                # noinspection PyUnboundLocalVariable
+                empty_column_style.append(color)
+            if color == '':
+                color = handicap_background_color
             handicap_style.append(f'{color}{tahoma}{nine_point}{center}{middle}')
 
         odd_style = f'{calibri}{ten_point}{center}{middle}'
@@ -136,8 +143,9 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: draw_style, subset=[OddTable.draw])
         style.apply(lambda _: lose_style, subset=[OddTable.lose])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
-        style.apply(lambda _: handicap_style,
-                    subset=HandicapTable.class_columns() + (['空列1', '空列2'] if special_format else []))
+        style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
+        if special_format:
+            style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
 
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')
 

@@ -11,6 +11,7 @@ from precise_bet.data import DataTable, HandicapTable, LeagueTable, MatchTable, 
     match_status, save_message, save_to_csv
 
 red = 'color: #FF0000;'
+handicapped_point_color = 'color: #2F75B5;'
 half_score_color = 'color: #00B050;'
 result_color = 'color: #FF8080;'
 handicap_background_color = 'background-color: #E1E9F0;'
@@ -118,6 +119,24 @@ def export(ctx, file_name: str, file_format: str):
                                                       f'{ya_hei}{nine_point}{center}{middle}')
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
 
+        host_style = []
+        guest_style = []
+
+        def append_team_style(name: str, style_list: list):
+            team_color = ''
+            if file_format == 'special':
+                if '(+1)' in name:
+                    team_color = handicapped_point_color
+                elif '(-1)' in name:
+                    team_color = red
+            style_list.append(f'{team_color}{ten_point}{middle}')
+
+        for match_id in data.index:
+            host = data.loc[match_id, DataTable.host_name]
+            guest = data.loc[match_id, DataTable.guest_name]
+            append_team_style(host, host_style)
+            append_team_style(guest, guest_style)
+
         handicap_style = []
         if file_format == 'special':
             empty_column_style = []
@@ -147,7 +166,8 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: league_styles, subset=[DataTable.league_id])
         style.apply(lambda _: [f'{nine_point}{left}{middle}'] * length, subset=[DataTable.round_number])
         style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])
-        style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=[DataTable.host_name, DataTable.guest_name])
+        style.apply(lambda _: host_style, subset=[DataTable.host_name])
+        style.apply(lambda _: guest_style, subset=[DataTable.guest_name])
         style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
         style.apply(lambda _: [f'{calibri}{half_score_color}{ten_point}{center}{middle}'] * length,
                     subset=[DataTable.half_score])

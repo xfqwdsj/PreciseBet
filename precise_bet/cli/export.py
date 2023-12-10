@@ -11,6 +11,7 @@ from precise_bet.data import DataTable, HandicapTable, LeagueTable, MatchTable, 
     match_status, save_message, save_to_csv
 
 red = 'color: #FF0000;'
+half_score_color = 'color: #00B050;'
 result_color = 'color: #FF8080;'
 handicap_background_color = 'background-color: #E1E9F0;'
 handicap_highlight_color = 'background-color: #D7327D;'
@@ -93,6 +94,12 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
     data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
+    half_score = data[DataTable.half_score]
+    if file_format == 'excel':
+        half_score = half_score.apply(lambda x: '' if x == '-' else x)
+    data.drop(columns=[DataTable.half_score], inplace=True)
+    data[DataTable.half_score] = half_score
+
     status = data[DataTable.match_status].map(match_status)
     if special_format:
         data.drop(columns=[DataTable.match_status], inplace=True)
@@ -139,6 +146,8 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])
         style.apply(lambda _: [f'{ten_point}{middle}'] * length, subset=[DataTable.host_name, DataTable.guest_name])
         style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
+        style.apply(lambda _: [f'{calibri}{half_score_color}{ten_point}{center}{middle}'] * length,
+                    subset=[DataTable.half_score])
         style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
         style.apply(lambda _: win_style, subset=[OddTable.win])
         style.apply(lambda _: draw_style, subset=[OddTable.draw])
@@ -146,6 +155,15 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
         if special_format:
+            def add_zeros(number: int):
+                if number < 10:
+                    return '00' + str(number)
+                elif number < 100:
+                    return '0' + str(number)
+                else:
+                    return str(number)
+
+            style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].apply(add_zeros)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
 
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')

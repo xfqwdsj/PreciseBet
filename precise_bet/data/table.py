@@ -196,6 +196,7 @@ class DataTable(MatchTable):
     host_name = Column('主队名称', str)
     guest_id = Column('客队', int)
     guest_name = Column('客队名称', str)
+    half_score = Column('半场比分', str)
 
 
 class UpdatableTable(Table, ABC):
@@ -374,7 +375,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
                                                     round_number=tds[2].text, match_time=match_timestamp,
                                                     match_status=int(tr['status']), host_id=host_id,
                                                     host_name=host_full_tag.text, guest_id=guest_id,
-                                                    guest_name=guest_full_tag.text)
+                                                    guest_name=guest_full_tag.text, half_score=tds[8].text.strip())
 
         score_tag = tds[6]
         host_score_text = score_tag.find('a', attrs={'class': 'clt1'}).text

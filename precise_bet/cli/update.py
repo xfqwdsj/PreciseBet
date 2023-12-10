@@ -30,11 +30,11 @@ class Action(Generic[AT], ABC):
         self.name = name
 
     @abstractmethod
-    def assign(self, project_path: Path, volume_number: int):
+    def assign(self, **kwargs):
         pass
 
     @abstractmethod
-    def update(self, **kwargs) -> Tuple[list[Any], list[Any]]:
+    def update(self, **kwargs) -> Tuple[Any, Any]:
         pass
 
     def __str__(self):
@@ -42,7 +42,7 @@ class Action(Generic[AT], ABC):
 
 
 class ValueAction(Action[ValueTable]):
-    def assign(self, project_path: Path, volume_number: int):
+    def assign(self, project_path: Path, volume_number: int, **_):
         self.table = ValueTable(project_path, volume_number).read()
 
     def update(self, match_id: str, global_data: DataTable, team_data: TeamTable, ua: str, **_):
@@ -63,7 +63,7 @@ class ValueAction(Action[ValueTable]):
 
 
 class HandicapAction(Action[HandicapTable]):
-    def assign(self, project_path: Path, volume_number: int):
+    def assign(self, project_path: Path, volume_number: int, **_):
         self.table = HandicapTable(project_path, volume_number).read()
 
     def update(self, match_id: str, global_data: DataTable, ua: str, **_):
@@ -146,7 +146,7 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
 
     project_path: Path = ctx.obj['project_path']
 
-    action.assign(project_path, volume_number)
+    action.assign(project_path=project_path, volume_number=volume_number)
 
     click.echo('正在读取数据...')
     global_data = DataTable(project_path, volume_number).read()

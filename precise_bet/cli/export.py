@@ -7,8 +7,8 @@ import click
 import pandas as pd
 from click_option_group import optgroup
 
-from precise_bet.data import match_status, save_to_csv, MatchTable, LeagueTable, TeamTable, DataTable, ScoreTable, \
-    ValueTable, HandicapTable, OddTable, save_message
+from precise_bet.data import DataTable, HandicapTable, LeagueTable, MatchTable, OddTable, ScoreTable, ValueTable, \
+    match_status, save_message, save_to_csv
 
 red = 'color: #FF0000;'
 result_color = 'color: #FF8080;'
@@ -45,7 +45,6 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
     data = pd.DataFrame(columns=[MatchTable.match_id]).set_index(MatchTable.match_id)
 
     league = LeagueTable(project_path).read()
-    team = TeamTable(project_path).read()
 
     for volume in project_path.iterdir():
         if not volume.is_dir():
@@ -72,7 +71,8 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
             else:
                 return '负'
 
-        volume_data.insert(0, '期数', volume_number)
+        volume_data.insert(0, '期号', volume_number)
+        # '+' 为特殊运算符，表示合并，不可替换为模板字符串
         volume_data.insert(8, '比分',
                            score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str))
         volume_data[OddTable.class_columns()] = odd[OddTable.class_columns()]
@@ -125,7 +125,7 @@ def export(ctx, file_name: str, file_format: str, special_format: bool):
         length = len(data)
         style = data.style
         style.apply(lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length,
-                    subset=['期数', DataTable.match_number])
+                    subset=['期号', DataTable.match_number])
         style.apply(lambda _: league_styles, subset=[DataTable.league_id])
         style.apply(lambda _: [f'{nine_point}{left}{middle}'] * length, subset=[DataTable.round_number])
         style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])

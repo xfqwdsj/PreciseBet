@@ -3,13 +3,14 @@
 from pathlib import Path
 
 import click
+
 from precise_bet.data import parse_table, save_to_csv
 from precise_bet.util import request_content
 
 
 @click.command()
 @click.pass_context
-@click.option('--volume-number', '-v', help='期数', default=None, type=int)
+@click.option('--volume-number', '-v', help='期号', default=None, type=int)
 def generate_data(ctx, volume_number: int | None):
     """
     生成数据
@@ -30,7 +31,7 @@ def generate_data(ctx, volume_number: int | None):
 
     data_table = parse_table(project_path, text)
 
-    click.echo(f'解析成功，期数：{data_table.volume_number}')
+    click.echo(f'解析成功，期号：{data_table.volume_number}')
 
     save_to_csv(data_table.data, project_path / str(data_table.volume_number), 'data')
     save_to_csv(data_table.score, project_path / str(data_table.volume_number), 'score')

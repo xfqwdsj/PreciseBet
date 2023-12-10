@@ -6,16 +6,16 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Tuple, TypeVar, Generic
+from typing import Any, Generic, Tuple, TypeVar
 
 import click
 import pandas as pd
 from click_option_group import optgroup
 from fake_useragent import UserAgent
 
-from precise_bet.data import save_to_csv, get_team_value, get_match_handicap, match_status, DataTable, ValueTable, \
-    TeamTable, HandicapTable
-from precise_bet.data.table import VolumeTable, MatchInformationTable, UpdatableTable
+from precise_bet.data import DataTable, HandicapTable, TeamTable, ValueTable, get_match_handicap, get_team_value, \
+    match_status, save_to_csv
+from precise_bet.data.table import MatchInformationTable, UpdatableTable, VolumeTable
 from precise_bet.type import EnumChoice
 from precise_bet.util import sleep
 
@@ -91,7 +91,7 @@ class Interval:
 @click.command()
 @click.pass_context
 @click.argument('action', type=EnumChoice(Actions))
-@click.option('--volume-number', '-v', help='期数', prompt='请输入期数', type=int)
+@click.option('--volume-number', '-v', help='期号', prompt='请输入期号', type=int)
 @optgroup.group('调试选项', help='调试选项')
 @optgroup.option('--debug', '-d', help='调试模式', is_flag=True)
 @optgroup.group('风控选项', help='指定更新时采取的风控机制')

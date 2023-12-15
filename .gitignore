@@ -1,5 +1,5 @@
-/project/
-/build/
-/dist/
-*/**/__pycache__/
+/project
+/build
+/dist
+*/**/__pycache__
 /version_file.txt

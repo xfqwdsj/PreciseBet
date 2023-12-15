@@ -184,15 +184,7 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
         if file_format == 'special':
-            def add_zeros(number: int):
-                if number < 10:
-                    return '00' + str(number)
-                elif number < 100:
-                    return '0' + str(number)
-                else:
-                    return str(number)
-
-            style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].apply(add_zeros)
+            style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].astype(str).str.zfill(3)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
 
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')

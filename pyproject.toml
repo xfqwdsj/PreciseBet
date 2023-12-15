@@ -48,3 +48,6 @@ requires = [
     "poetry-dynamic-versioning",
 ]
 build-backend = "poetry_dynamic_versioning.backend"
+
+[virtualenvs]
+prefer-active-python = true

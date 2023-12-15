@@ -112,6 +112,9 @@ def export(ctx, file_name: str, file_format: str):
     data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
+    if file_format == 'special':
+        data['全场比分'] = data['比分']
+
     half_score = data[DataTable.half_score]
     if is_excel(file_format):
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
@@ -199,6 +202,7 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
         if file_format == 'special':
+            style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['全场比分'])
             style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].astype(str).str.zfill(3)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
 
@@ -217,8 +221,6 @@ def export(ctx, file_name: str, file_format: str):
         for cell in worksheet[columns[DataTable.match_time]]:
             cell.number_format = 'yyyy/m/d h:mm'
 
-        worksheet.column_dimensions[columns[DataTable.match_time]].width = 15
-
         for cells in worksheet[f'{columns[OddTable.win]}:{columns[OddTable.lose]}']:
             for cell in cells:
                 cell.number_format = '0.00'
@@ -230,8 +232,20 @@ def export(ctx, file_name: str, file_format: str):
             for cell in cells:
                 cell.number_format = '0.000'
 
+        worksheet.column_dimensions[columns[DataTable.match_time]].width = 12
+
         worksheet.column_dimensions[columns[DataTable.host_name]].width = 20
         worksheet.column_dimensions[columns[DataTable.guest_name]].width = 20
+
+        worksheet.column_dimensions[columns[DataTable.handicap_name]].width = 10
+
+        worksheet.column_dimensions[columns['结果']].width = 2
+
+        for column in [columns['比分'], columns[DataTable.half_score]]:
+            worksheet.column_dimensions[column].width = 4
+
+        if file_format == 'special':
+            worksheet.column_dimensions[columns['全场比分']].width = 4
 
         for i in range(3):
             worksheet.column_dimensions[chr(ord(columns[OddTable.win]) + i)].width = 6

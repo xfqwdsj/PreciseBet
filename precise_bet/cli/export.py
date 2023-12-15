@@ -95,7 +95,8 @@ def export(ctx, file_name: str, file_format: str):
             volume_data['空列2'] = ''
         volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
-        data = pd.concat([data, volume_data])
+        data = pd.concat([data, volume_data]).reset_index()
+        data = data.drop_duplicates(subset=[MatchTable.match_id], keep='last').set_index(MatchTable.match_id)
 
     timezone = datetime.now().astimezone().tzinfo
 

@@ -14,7 +14,7 @@ from click_option_group import optgroup
 from fake_useragent import UserAgent
 
 from precise_bet.data import DataTable, HandicapTable, TeamTable, ValueTable, get_match_handicap, get_team_value, \
-    match_status, save_to_csv
+    match_status_dict, save_to_csv
 from precise_bet.data.table import MatchInformationTable, UpdatableTable, VolumeTable
 from precise_bet.type import EnumChoice
 from precise_bet.util import sleep
@@ -161,7 +161,7 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
         string = string.strip()
         if string.startswith('e'):
             exclude_list = [int(s.strip()) for s in string[1:].split(',')]
-            result = list(set(match_status.keys()) - set(exclude_list))
+            result = list(set(match_status_dict.keys()) - set(exclude_list))
         else:
             result = [int(s.strip()) for s in string.split(',')]
         result.sort()
@@ -195,7 +195,7 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
     data_analysis.loc['全部'] = len(processing_data)
     data_analysis.loc['从未获取'] = len(processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0])
     for status in processing_data[DataTable.match_status].unique():
-        data_analysis.loc[match_status[status]] = len(
+        data_analysis.loc[match_status_dict[status]] = len(
             processing_data.loc[processing_data[DataTable.match_status] == status])
 
     click.echo()
@@ -211,12 +211,12 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
                nl=False)
     click.echo(f'更新间隔偏移量范围 {click.style(str(interval_offset_range), fg="blue", bold=True)} 秒，', nl=False)
     if len(last_updated_status_list) > 0:
-        status_text_list = [match_status[status] for status in list(set(last_updated_status_list) - {-1})]
+        status_text_list = [match_status_dict[status] for status in list(set(last_updated_status_list) - {-1})]
         click.echo(f'只更新上次更新时状态为 {click.style(status_text_list, fg="yellow", bold=True)} 的比赛，', nl=False)
     else:
         click.echo('不对上次更新时比赛状态进行限制，', nl=False)
     if len(status_list) > 0:
-        status_text_list = [match_status[status] for status in status_list]
+        status_text_list = [match_status_dict[status] for status in status_list]
         click.echo(f'只更新状态为 {click.style(status_text_list, fg="yellow", bold=True)} 的比赛，', nl=False)
     else:
         click.echo('不对比赛状态进行限制，', nl=False)
@@ -267,7 +267,8 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
 
             host_name = team_data.loc[global_data.loc[match_id, DataTable.host_id], TeamTable.name]
             guest_name = team_data.loc[global_data.loc[match_id, DataTable.guest_id], TeamTable.name]
-            status = click.style(match_status[global_data.loc[match_id, DataTable.match_status]], fg='blue', bold=True)
+            status = click.style(match_status_dict[global_data.loc[match_id, DataTable.match_status]], fg='blue',
+                                 bold=True)
 
             click.echo(f'正在更新代号为 {match_id} 的比赛（{host_name} VS {guest_name}，{status}）的{action.name}信息...')
 

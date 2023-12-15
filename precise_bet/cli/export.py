@@ -8,7 +8,7 @@ import pandas as pd
 from click_option_group import optgroup
 
 from precise_bet.data import DataTable, HandicapTable, LeagueTable, MatchTable, OddTable, ScoreTable, ValueTable, \
-    match_status, save_message, save_to_csv
+    match_status_dict, save_message, save_to_csv
 
 red = 'color: #FF0000;'
 handicapped_point_color = 'color: #2F75B5;'
@@ -80,6 +80,10 @@ def export(ctx, file_name: str, file_format: str):
             else:
                 return '负'
 
+        if not file_format == 'special':
+            handicap_name = volume_data[DataTable.handicap_name]
+            volume_data.drop(columns=[DataTable.handicap_name], inplace=True)
+
         volume_data.insert(0, '期号', volume_number)
         # '+' 为特殊运算符，表示合并，不可替换为模板字符串
         score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
@@ -89,6 +93,9 @@ def export(ctx, file_name: str, file_format: str):
         placeholder = '-' if file_format == 'csv' else ''
         volume_data.loc[volume_data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
         volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
+        if not file_format == 'special':
+            # noinspection PyUnboundLocalVariable
+            volume_data[DataTable.handicap_name] = handicap_name
         volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
         if file_format == 'special':
             volume_data['空列1'] = ''
@@ -112,7 +119,12 @@ def export(ctx, file_name: str, file_format: str):
         data.drop(columns=[DataTable.half_score], inplace=True)
     data[DataTable.half_score] = half_score
 
-    status = data[DataTable.match_status].map(match_status)
+    if file_format == 'special':
+        handicap_name = data[DataTable.handicap_name]
+        data.drop(columns=[DataTable.handicap_name], inplace=True)
+        data[DataTable.handicap_name] = handicap_name
+
+    status = data[DataTable.match_status].map(match_status_dict)
     if file_format == 'special':
         data.drop(columns=[DataTable.match_status], inplace=True)
     data[DataTable.match_status] = status
@@ -176,6 +188,7 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])
         style.apply(lambda _: host_style, subset=[DataTable.host_name])
         style.apply(lambda _: guest_style, subset=[DataTable.guest_name])
+        style.apply(lambda _: [f'{ya_hei}{nine_point}{left}{middle}'] * length, subset=[DataTable.handicap_name])
         style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
         style.apply(lambda _: [f'{calibri}{half_score_color}{ten_point}{center}{middle}'] * length,
                     subset=[DataTable.half_score])

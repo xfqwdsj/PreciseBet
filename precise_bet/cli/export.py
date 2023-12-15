@@ -82,12 +82,12 @@ def export(ctx, file_name: str, file_format: str):
 
         volume_data.insert(0, '期号', volume_number)
         # '+' 为特殊运算符，表示合并，不可替换为模板字符串
-        volume_data.insert(8, '比分',
-                           score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str))
+        score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
+        volume_data.insert(8, '比分', score_str)
         volume_data[OddTable.class_columns()] = odd[OddTable.class_columns()]
         volume_data['结果'] = volume_data['比分'].apply(calculate_result)
-        volume_data.loc[
-            volume_data[DataTable.match_status] != 4, ['比分', '结果']] = '-' if file_format == 'csv' else ''
+        placeholder = '-' if file_format == 'csv' else ''
+        volume_data.loc[volume_data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
         volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
         volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
         if file_format == 'special':

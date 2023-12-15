@@ -98,6 +98,8 @@ def export(ctx, file_name: str, file_format: str):
         data = pd.concat([data, volume_data]).reset_index()
         data = data.drop_duplicates(subset=[MatchTable.match_id], keep='last').set_index(MatchTable.match_id)
 
+    click.echo(f'正在整合数据{'并添加样式' if is_excel(file_format) else ''}...')
+
     timezone = datetime.now().astimezone().tzinfo
 
     data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)

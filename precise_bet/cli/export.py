@@ -54,7 +54,12 @@ def export(ctx, file_name: str, file_format: str):
         if not volume.is_dir():
             continue
 
-        volume_number = int(volume.name)
+        volume_number: int
+
+        try:
+            volume_number = int(volume.name)
+        except ValueError:
+            continue
 
         click.echo(f'正在处理第 {volume_number} 期数据...')
 

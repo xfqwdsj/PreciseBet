@@ -30,6 +30,13 @@ def start_building():
         legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe', product_name='PreciseBet',
         translations=[0x0804, 1200]
     )
-    Path('buildfile.py').rename('buildfile.spec')
+    py_file = Path('buildfile.py')
+    spec_file = Path('buildfile.spec')
+    if spec_file.exists():
+        spec_file.unlink()
+    if py_file.exists():
+        py_file.rename('buildfile.spec')
+    if not spec_file.exists():
+        raise FileNotFoundError('未找到 buildfile.spec 文件')
     PyInstaller.__main__.run(['buildfile.spec', '--noconfirm'])
-    Path('buildfile.spec').rename('buildfile.py')
+    spec_file.rename('buildfile.py')

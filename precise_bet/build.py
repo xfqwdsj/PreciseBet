@@ -3,6 +3,7 @@
 import hashlib
 import os
 import sys
+from pathlib import Path
 
 import PyInstaller.__main__
 import semver
@@ -29,4 +30,6 @@ def start_building():
         legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe', product_name='PreciseBet',
         translations=[0x0804, 1200]
     )
-    PyInstaller.__main__.run(['buildfile.py', '--noconfirm'])
+    Path('buildfile.py').rename('buildfile.spec')
+    PyInstaller.__main__.run(['buildfile.spec', '--noconfirm'])
+    Path('buildfile.spec').rename('buildfile.py')

@@ -257,7 +257,7 @@ def export(
             for cell in cells:
                 cell.number_format = '0.000'
 
-        worksheet.column_dimensions[columns[DataTable.match_time]].width = 12
+        worksheet.column_dimensions[columns[DataTable.match_time]].width = 15
 
         worksheet.column_dimensions[columns[DataTable.host_name]].width = 20
         worksheet.column_dimensions[columns[DataTable.guest_name]].width = 20

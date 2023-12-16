@@ -2,12 +2,12 @@
 
 from pathlib import Path
 
-import click
+from precise_bet import rprint_err
 
 
 def mkdir(path: Path):
     if not path.exists():
         path.mkdir(parents=True)
     elif not path.is_dir():
-        click.echo('路径错误', err=True)
+        rprint_err('路径错误')
         return

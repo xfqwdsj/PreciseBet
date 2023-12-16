@@ -1,12 +1,13 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
-import click
 import requests
 from fake_useragent import UserAgent
 
+from precise_bet import rprint
+
 
 def request_content(url, ua=UserAgent().random) -> str:
-    click.echo(f'正在向 {url} 发送请求（UA：{ua}）...')
+    rprint(f'正在向 {url} 发送请求（UA：{ua}）...')
     response = requests.get(url, headers={'User-Agent': ua})
     if not response.ok:
         if response.status_code == 503:

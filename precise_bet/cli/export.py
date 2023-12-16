@@ -1,12 +1,15 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
+from abc import ABC
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from typing import Annotated
 
-import click
 import pandas as pd
-from click_option_group import optgroup
+import typer
 
+from precise_bet import rprint
 from precise_bet.data import save_message, save_to_csv
 from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, ValueTable, match_status_dict
 from precise_bet.util import mkdir
@@ -28,28 +31,49 @@ left = 'text-align: left;'
 middle = 'vertical-align: middle;'
 
 
-def is_excel(file_format: str):
-    return file_format == 'excel' or file_format == 'special'
+class ExportFileFormat(ABC):
+    extension: str
 
 
-@click.command()
-@click.pass_context
-@optgroup.group('导出选项', help='指定导出时使用的选项')
-@optgroup.option('--file-name', '-n', help='导出文件名', default='exported/data', type=str)
-@optgroup.option(
-    '--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
-    type=click.Choice(['csv', 'excel', 'special'])
-)
-def export(ctx, file_name: str, file_format: str):
-    """
-    导出数据
-    """
+class Csv(ExportFileFormat):
+    extension = 'csv'
+
+
+class Excel(ExportFileFormat):
+    extension = 'xlsx'
+
+
+class Special(Excel):
+    pass
+
+
+class ExportFileFormats(Enum):
+    csv = Csv()
+    excel = Excel()
+    special = Special()
+
+
+def formats_parser(value: str) -> ExportFileFormat:
+    try:
+        return ExportFileFormats[value].value
+    except KeyError:
+        raise typer.BadParameter(f'不支持的文件格式：{value}')
+
+
+def export(
+        ctx: typer.Context,
+        file_name: Annotated[str, typer.Option('--file-name', '-n', help='导出文件名')] = 'exported/data',
+        file_format: Annotated[ExportFileFormat, typer.Option(
+            '--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', parser=formats_parser
+        )] = ExportFileFormats.csv.value
+):
+    """导出数据"""
 
     project_path: Path = ctx.obj['project_path']
 
-    click.echo('开始导出数据...')
+    rprint('开始导出数据...')
 
-    click.echo(f'正在处理数据...')
+    rprint('正在处理数据...')
 
     data = DataTable(project_path).read()
     score = ScoreTable(project_path).read()
@@ -69,7 +93,7 @@ def export(ctx, file_name: str, file_format: str):
         else:
             return '负'
 
-    if not file_format == 'special':
+    if file_format is not Special:
         handicap_name = data[DataTable.handicap_name]
         data.drop(columns=[DataTable.handicap_name], inplace=True)
 
@@ -81,46 +105,46 @@ def export(ctx, file_name: str, file_format: str):
     placeholder = '-' if file_format == 'csv' else ''
     data.loc[data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
     data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
-    if not file_format == 'special':
+    if file_format is not Special:
         # noinspection PyUnboundLocalVariable
         data[DataTable.handicap_name] = handicap_name
     data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
-    if file_format == 'special':
+    if file_format is Special:
         data['空列1'] = ''
         data['空列2'] = ''
     data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
-    click.echo(f'正在整合数据{'并添加样式' if is_excel(file_format) else ''}...')
+    rprint(f'正在整合数据{'并添加样式' if file_format is Excel else ''}...')
 
     timezone = datetime.now().astimezone().tzinfo
 
     data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
-    if file_format == 'special':
+    if file_format is Special:
         data['全场比分'] = data['比分']
 
     half_score = data[DataTable.half_score]
-    if is_excel(file_format):
+    if file_format is Excel:
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
-    if file_format == 'special':
+    if file_format is Special:
         data.drop(columns=[DataTable.half_score], inplace=True)
     data[DataTable.half_score] = half_score
 
-    if file_format == 'special':
+    if file_format is Special:
         handicap_name = data[DataTable.handicap_name]
         data.drop(columns=[DataTable.handicap_name], inplace=True)
         data[DataTable.handicap_name] = handicap_name
 
     status = data[DataTable.match_status].map(match_status_dict)
-    if file_format == 'special':
+    if file_format is Special:
         data.drop(columns=[DataTable.match_status], inplace=True)
     data[DataTable.match_status] = status
 
     if file_format == 'csv':
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
         save_to_csv(data, project_path, file_name)
-    elif is_excel(file_format):
+    elif file_format is Excel:
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
         league_styles = league_styles.apply(
@@ -134,7 +158,7 @@ def export(ctx, file_name: str, file_format: str):
 
         def append_team_style(name: str, style_list: list):
             team_color = ''
-            if file_format == 'special':
+            if file_format is Special:
                 if '(+1)' in name:
                     team_color = handicapped_point_color
                 elif '(-1)' in name:
@@ -148,7 +172,7 @@ def export(ctx, file_name: str, file_format: str):
             append_team_style(guest, guest_style)
 
         handicap_style = []
-        if file_format == 'special':
+        if file_format is Special:
             empty_column_style = []
         for match_id in data.index:
             color = ''
@@ -157,7 +181,7 @@ def export(ctx, file_name: str, file_format: str):
             elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
                 if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                     color = handicap_highlight_color
-            if file_format == 'special':
+            if file_format is Special:
                 # noinspection PyUnboundLocalVariable
                 empty_column_style.append(color)
             if color == '':
@@ -192,7 +216,7 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: lose_style, subset=[OddTable.lose])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
-        if file_format == 'special':
+        if file_format is Special:
             style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['全场比分'])
             style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].astype(str).str.zfill(3)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
@@ -236,16 +260,16 @@ def export(ctx, file_name: str, file_format: str):
         for column in [columns['比分'], columns[DataTable.half_score]]:
             worksheet.column_dimensions[column].width = 4
 
-        if file_format == 'special':
+        if file_format is Special:
             worksheet.column_dimensions[columns['全场比分']].width = 4
 
         for i in range(3):
             worksheet.column_dimensions[chr(ord(columns[OddTable.win]) + i)].width = 6
 
-        for i in range(6 if not file_format == 'special' else 8):
+        for i in range(6 if not file_format is Special else 8):
             worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6
 
-        if file_format == 'special':
+        if file_format is Special:
             for i in range(2):
                 worksheet.column_dimensions[chr(ord(columns['空列1']) + i)].width = 0.001
 

@@ -3,17 +3,17 @@
 from pathlib import Path
 from typing import Callable
 
-import click
 from pandas import DataFrame
 from pandas.io.formats.style import Styler
 
+from precise_bet import rprint
 from precise_bet.util import mkdir
 
 
 def save_message(path: Path, func: Callable):
-    click.echo('正在保存数据...')
+    rprint('正在保存数据...')
     mkdir(path.parent)
-    click.echo(f'正在保存到 {path} ...')
+    rprint(f'正在保存到 [bold]{path}[/bold] ...')
     func()
 
 

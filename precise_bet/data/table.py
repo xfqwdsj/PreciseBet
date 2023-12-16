@@ -6,11 +6,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
-import click
 from bs4 import BeautifulSoup, Tag
 # noinspection PyProtectedMember
 from regex import regex
 
+from precise_bet import rprint
 from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, TeamTable, ValueTable
 
 
@@ -50,9 +50,10 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         match_id = tr['id']
 
         if match_id in data.index and data.loc[match_id, DataTable.volume_number] > volume_number:
-            click.secho(
-                f'在第 {volume_number} 期发现重复的比赛 {match_id}，已有的数据位于第 {data.loc[match_id, DataTable.volume_number]} 期。'
-                '跳过该比赛...', fg='yellow', bold=True
+            rprint(
+                f'[bold yellow]在第 {volume_number} 期发现重复的比赛 {match_id}，'
+                f'已有的数据位于第 {data.loc[match_id, DataTable.volume_number]} 期。'
+                '跳过该比赛...'
             )
             continue
 

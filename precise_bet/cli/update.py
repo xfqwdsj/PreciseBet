@@ -14,22 +14,29 @@ from click_option_group import optgroup
 from fake_useragent import UserAgent
 
 from precise_bet.data import get_match_handicap, get_team_value, save_to_csv
-from precise_bet.type import DataTable, EnumChoice, HandicapTable, MatchInformationTable, TeamTable, UpdatableTable, \
-    ValueTable, VolumeTable, match_status_dict
+from precise_bet.type import DataTable, EnumChoice, HandicapTable, MatchInformationTable, ProjectTable, TeamTable, \
+    UpdatableTable, ValueTable, match_status_dict
 from precise_bet.util import sleep
 
-AT = TypeVar('AT', bound=VolumeTable)
+AT = TypeVar('AT', bound=ProjectTable)
 
 
 class Action(Generic[AT], ABC):
     name: str
-    table: AT
+    _table: AT
 
     def __init__(self, name: str):
         self.name = name
 
+    @property
+    def table(self) -> AT:
+        return self._table.copy()
+
     @abstractmethod
     def assign(self, **kwargs):
+        pass
+
+    def filter(self, **kwargs) -> AT:
         pass
 
     @abstractmethod
@@ -41,11 +48,14 @@ class Action(Generic[AT], ABC):
 
 
 class ValueAction(Action[ValueTable]):
-    def assign(self, project_path: Path, volume_number: int, **_):
-        self.table = ValueTable(project_path, volume_number).read()
+    def assign(self, project_path: Path, **_):
+        self._table = ValueTable(project_path).read()
+
+    def filter(self, indexes, **_):
+        return self.table.loc[self.table.index.isin(indexes)]
 
     def update(self, match_id: str, global_data: DataTable, team_data: TeamTable, ua: str, **_):
-        before = self.table.get_data(match_id)
+        before = self._table.get_data(match_id)
         after = []
         updated_time: float
         for team_id_column in [DataTable.host_id, DataTable.guest_id]:
@@ -53,8 +63,8 @@ class ValueAction(Action[ValueTable]):
             after += [value]
             team_data.update_from_value(global_data.loc[match_id, team_id_column], value)
             team_data.save()
-        self.table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
-        self.table.save()
+        self._table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
+        self._table.save()
         return before, after
 
     def __init__(self):
@@ -62,14 +72,17 @@ class ValueAction(Action[ValueTable]):
 
 
 class HandicapAction(Action[HandicapTable]):
-    def assign(self, project_path: Path, volume_number: int, **_):
-        self.table = HandicapTable(project_path, volume_number).read()
+    def assign(self, project_path: Path, **_):
+        self._table = HandicapTable(project_path).read()
+
+    def filter(self, indexes, **_):
+        return self.table.loc[self.table.index.isin(indexes)]
 
     def update(self, match_id: str, global_data: DataTable, ua: str, **_):
-        before = self.table.get_data(match_id)
+        before = self._table.get_data(match_id)
         after = get_match_handicap(match_id, ua)
-        self.table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
-        self.table.save()
+        self._table.update_from_list(match_id, after, global_data.loc[match_id, DataTable.match_status])
+        self._table.save()
         return before, after
 
     def __init__(self):
@@ -90,7 +103,7 @@ class Interval:
 @click.command()
 @click.pass_context
 @click.argument('action', type=EnumChoice(Actions))
-@click.option('--volume-number', '-v', help='期号', prompt='请输入期号', type=int)
+@click.option('--volume-number', '-v', help='期号', type=int)
 @optgroup.group('调试选项', help='调试选项')
 @optgroup.option('--debug', '-d', help='调试模式', is_flag=True)
 @optgroup.group('风控选项', help='指定更新时采取的风控机制')
@@ -115,7 +128,7 @@ class Interval:
 @optgroup.option('--only-new', '-n', help='只更新从未获取过的比赛', is_flag=True)
 @optgroup.option('--limit-count', '-m', help='指定要更新多少场比赛（设为 0 以忽略）', default=0, type=int)
 def update(
-        ctx, action: Action, debug: bool, volume_number: int, interval: int, extra_interval: int,
+        ctx, action: Action, debug: bool, volume_number: int | None, interval: int, extra_interval: int,
         extra_interval_probability: float, interval_offset_range: int, random_ua: bool, last_updated_status: str,
         status: str, break_hours: int, only_new: bool, limit_count: int
 ):
@@ -152,12 +165,16 @@ def update(
 
     project_path: Path = ctx.obj['project_path']
 
-    action.assign(project_path=project_path, volume_number=volume_number)
+    global_data = DataTable(project_path).read()
+    team_data = TeamTable(project_path).read()
+
+    if volume_number:
+        global_data = global_data.loc[global_data[DataTable.volume_number] == volume_number]
 
     click.echo('正在读取数据...')
-    global_data = DataTable(project_path, volume_number).read()
-    data = action.table
-    team_data = TeamTable(project_path).read()
+
+    action.assign(project_path=project_path)
+    data = action.filter(indexes=global_data.index)
 
     if break_hours < 0:
         break_hours = 0
@@ -176,35 +193,28 @@ def update(
     last_updated_status_list: list[int] = [-1] + init_status_list(last_updated_status)
     status_list: list[int] = init_status_list(status)
 
-    processing_data = data.copy()[[]]
-    processing_data[MatchInformationTable.updated_match_status] = data[MatchInformationTable.updated_match_status]
-    processing_data[DataTable.match_status] = global_data[DataTable.match_status]
-    processing_data[MatchInformationTable.updated_time] = data[MatchInformationTable.updated_time]
+    data[DataTable.match_status] = global_data[DataTable.match_status]
 
-    processing_data = processing_data.loc[
-        processing_data[MatchInformationTable.updated_match_status].isin(last_updated_status_list)]
-    processing_data = processing_data.loc[processing_data[DataTable.match_status].isin(status_list)]
+    data = data.loc[data[MatchInformationTable.updated_match_status].isin(last_updated_status_list)]
+    data = data.loc[data[DataTable.match_status].isin(status_list)]
     if only_new:
-        processing_data = processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0]
-    processing_data = processing_data.loc[
-        (global_data[DataTable.match_status] != 0) | (global_data[DataTable.match_time] < break_time)]
-    processing_data.sort_values(
+        data = data.loc[data[UpdatableTable.updated_time] == -1.0]
+    data = data.loc[(global_data[DataTable.match_status] != 0) | (global_data[DataTable.match_time] < break_time)]
+    data.sort_values(
         by=[DataTable.match_status, MatchInformationTable.updated_time], ascending=[False, True], inplace=True
     )
 
     if limit_count > 0:
-        processing_data = processing_data.iloc[:limit_count]
+        data = data.iloc[:limit_count]
 
     if debug:
-        save_to_csv(processing_data, project_path, 'processing')
+        save_to_csv(data, project_path, 'processing')
 
     data_analysis = pd.DataFrame(columns=['数量'])
-    data_analysis.loc['全部'] = len(processing_data)
-    data_analysis.loc['从未获取'] = len(processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0])
-    for status in processing_data[DataTable.match_status].unique():
-        data_analysis.loc[match_status_dict[status]] = len(
-            processing_data.loc[processing_data[DataTable.match_status] == status]
-        )
+    data_analysis.loc['全部'] = len(data)
+    data_analysis.loc['从未获取'] = len(data.loc[data[UpdatableTable.updated_time] == -1.0])
+    for status in data[DataTable.match_status].unique():
+        data_analysis.loc[match_status_dict[status]] = len(data.loc[data[DataTable.match_status] == status])
 
     click.echo()
 
@@ -252,7 +262,7 @@ def update(
 
     interval_list: list[Interval] = []
     extra_interval_count = 0
-    for i in range(len(processing_data) - 1):
+    for i in range(len(data) - 1):
         delta = random.randint(-interval_offset_range, interval_offset_range)
         if random.random() < extra_interval_probability:
             interval_list.append(Interval(extra_interval + delta, True))
@@ -263,13 +273,13 @@ def update(
     start_time = datetime.now()
 
     def get_eta(progress: int) -> timedelta:
-        return timedelta(seconds=sum([_i.seconds for _i in interval_list]) + (len(processing_data) - progress) * 2)
+        return timedelta(seconds=sum([_i.seconds for _i in interval_list]) + (len(data) - progress) * 2)
 
     initial_eta = get_eta(0)
 
     click.echo(f'本次更新将使用 {extra_interval_count} 次额外更新间隔')
 
-    with click.progressbar(processing_data.index, show_eta=False, show_percent=True, show_pos=True) as indexes:
+    with click.progressbar(data.index, show_eta=False, show_percent=True, show_pos=True) as indexes:
         eta = initial_eta
         for index, match_id in enumerate(indexes):
             click.echo(f'   预计全部更新还需要 {eta}')
@@ -297,7 +307,7 @@ def update(
                 click.echo('更新后：')
             click.secho(str(after), fg='blue', bold=True)
 
-            if index == len(processing_data) - 1:
+            if index == len(data) - 1:
                 break
 
             current_interval = interval_list[0]

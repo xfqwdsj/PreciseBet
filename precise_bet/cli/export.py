@@ -8,8 +8,8 @@ import pandas as pd
 from click_option_group import optgroup
 
 from precise_bet.data import save_message, save_to_csv
-from precise_bet.type import DataTable, HandicapTable, LeagueTable, MatchTable, OddTable, ScoreTable, ValueTable, \
-    match_status_dict
+from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, ValueTable, match_status_dict
+from precise_bet.util import mkdir
 
 red = 'color: #FF0000;'
 handicapped_point_color = 'color: #2F75B5;'
@@ -35,7 +35,7 @@ def is_excel(file_format: str):
 @click.command()
 @click.pass_context
 @optgroup.group('导出选项', help='指定导出时使用的选项')
-@optgroup.option('--file-name', '-n', help='导出文件名', default='data', type=str)
+@optgroup.option('--file-name', '-n', help='导出文件名', default='exported/data', type=str)
 @optgroup.option(
     '--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
     type=click.Choice(['csv', 'excel', 'special'])
@@ -49,64 +49,46 @@ def export(ctx, file_name: str, file_format: str):
 
     click.echo('开始导出数据...')
 
-    data = pd.DataFrame(columns=[MatchTable.match_id]).set_index(MatchTable.match_id)
+    click.echo(f'正在处理数据...')
 
+    data = DataTable(project_path).read()
+    score = ScoreTable(project_path).read()
+    value = ValueTable(project_path).read()
     league = LeagueTable(project_path).read()
+    handicap = HandicapTable(project_path).read()
+    odd = OddTable(project_path).read()
 
-    for volume in project_path.iterdir():
-        if not volume.is_dir():
-            continue
+    def calculate_result(score_text: str):
+        score_list = score_text.split('-')
+        host_score = int(score_list[0].strip())
+        guest_score = int(score_list[1].strip())
+        if host_score > guest_score:
+            return '胜'
+        elif host_score == guest_score:
+            return '平'
+        else:
+            return '负'
 
-        volume_number: int
+    if not file_format == 'special':
+        handicap_name = data[DataTable.handicap_name]
+        data.drop(columns=[DataTable.handicap_name], inplace=True)
 
-        try:
-            volume_number = int(volume.name)
-        except ValueError:
-            continue
-
-        click.echo(f'正在处理第 {volume_number} 期数据...')
-
-        volume_data = DataTable(project_path, volume_number).read()
-        score = ScoreTable(project_path, volume_number).read()
-        value = ValueTable(project_path, volume_number).read()
-        handicap = HandicapTable(project_path, volume_number).read()
-        odd = OddTable(project_path, volume_number).read()
-
-        def calculate_result(score_text: str):
-            score_list = score_text.split('-')
-            host_score = int(score_list[0].strip())
-            guest_score = int(score_list[1].strip())
-            if host_score > guest_score:
-                return '胜'
-            elif host_score == guest_score:
-                return '平'
-            else:
-                return '负'
-
-        if not file_format == 'special':
-            handicap_name = volume_data[DataTable.handicap_name]
-            volume_data.drop(columns=[DataTable.handicap_name], inplace=True)
-
-        volume_data.insert(0, '期号', volume_number)
-        # '+' 为特殊运算符，表示合并，不可替换为模板字符串
-        score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
-        volume_data.insert(8, '比分', score_str)
-        volume_data[OddTable.class_columns()] = odd[OddTable.class_columns()]
-        volume_data['结果'] = volume_data['比分'].apply(calculate_result)
-        placeholder = '-' if file_format == 'csv' else ''
-        volume_data.loc[volume_data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
-        volume_data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
-        if not file_format == 'special':
-            # noinspection PyUnboundLocalVariable
-            volume_data[DataTable.handicap_name] = handicap_name
-        volume_data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
-        if file_format == 'special':
-            volume_data['空列1'] = ''
-            volume_data['空列2'] = ''
-        volume_data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
-
-        data = pd.concat([data, volume_data]).reset_index()
-        data = data.drop_duplicates(subset=[MatchTable.match_id], keep='last').set_index(MatchTable.match_id)
+    # '+' 为特殊运算符，表示合并，不可替换为模板字符串
+    score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
+    data.insert(8, '比分', score_str)
+    data[OddTable.class_columns()] = odd[OddTable.class_columns()]
+    data['结果'] = data['比分'].apply(calculate_result)
+    placeholder = '-' if file_format == 'csv' else ''
+    data.loc[data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
+    data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
+    if not file_format == 'special':
+        # noinspection PyUnboundLocalVariable
+        data[DataTable.handicap_name] = handicap_name
+    data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
+    if file_format == 'special':
+        data['空列1'] = ''
+        data['空列2'] = ''
+    data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
     click.echo(f'正在整合数据{'并添加样式' if is_excel(file_format) else ''}...')
 
@@ -190,7 +172,8 @@ def export(ctx, file_name: str, file_format: str):
         length = len(data)
         style = data.style
         style.apply(
-            lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length, subset=['期号', DataTable.match_number]
+            lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length,
+            subset=[DataTable.volume_number, DataTable.match_number]
         )
         style.apply(lambda _: league_styles, subset=[DataTable.league_id])
         style.apply(lambda _: [f'{nine_point}{left}{middle}'] * length, subset=[DataTable.round_number])
@@ -217,6 +200,7 @@ def export(ctx, file_name: str, file_format: str):
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')
 
         path = project_path / f'{file_name}.xlsx'
+        mkdir(path.parent)
 
         columns = {column: chr(ord('B') + index) for index, column in enumerate(style.data.columns.values)}
 

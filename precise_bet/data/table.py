@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
+import click
 from bs4 import BeautifulSoup, Tag
 # noinspection PyProtectedMember
 from regex import regex
@@ -30,11 +31,11 @@ def parse_table(project_path: Path, html: str) -> DataSet:
 
     volume_number = int(soup.find(id='sel_expect').text.strip())
 
-    data = DataTable(project_path, volume_number).create()
-    score = ScoreTable(project_path, volume_number).create()
-    value = ValueTable(project_path, volume_number).read_or_create()
-    handicap = HandicapTable(project_path, volume_number).read_or_create()
-    odd = OddTable(project_path, volume_number).create()
+    data = DataTable(project_path).read_or_create()
+    score = ScoreTable(project_path).read_or_create()
+    value = ValueTable(project_path).read_or_create()
+    handicap = HandicapTable(project_path).read_or_create()
+    odd = OddTable(project_path).read_or_create()
     league = LeagueTable(project_path).read_or_create()
     team = TeamTable(project_path).read_or_create()
 
@@ -47,6 +48,13 @@ def parse_table(project_path: Path, html: str) -> DataSet:
             continue
 
         match_id = tr['id']
+
+        if match_id in data.index and data.loc[match_id, DataTable.volume_number] > volume_number:
+            click.secho(
+                f'在第 {volume_number} 期发现重复的比赛 {match_id}，已有的数据位于第 {data.loc[match_id, DataTable.volume_number]} 期。'
+                '跳过该比赛...', fg='yellow', bold=True
+            )
+            continue
 
         tds: list[Tag] = tr.find_all('td')
 
@@ -77,9 +85,10 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         )
 
         data.loc[match_id] = DataTable.generate_row(
-            match_number=int(tds[0].text), league_id=league_id, round_number=tds[2].text, match_time=match_timestamp,
-            match_status=match_status, host_id=host_id, host_name=host_full_tag.text, guest_id=guest_id,
-            guest_name=guest_full_tag.text, half_score=tds[8].text.strip(), handicap_name=handicap_name
+            volume_number=volume_number, match_number=int(tds[0].text), league_id=league_id, round_number=tds[2].text,
+            match_time=match_timestamp, match_status=match_status, host_id=host_id, host_name=host_full_tag.text,
+            guest_id=guest_id, guest_name=guest_full_tag.text, half_score=tds[8].text.strip(),
+            handicap_name=handicap_name
         )
 
         if match_id not in value.index:
@@ -112,7 +121,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
             odd_list = [float(i) for i in odds['0']]
         odd.loc[match_id] = OddTable.row_from_list(odd_list, updated_time, data.loc[match_id, DataTable.match_status])
 
-    data.sort_values(by=DataTable.match_number, inplace=True)
+    data.sort_values(by=[DataTable.volume_number, DataTable.match_number], inplace=True)
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
 

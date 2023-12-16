@@ -7,15 +7,12 @@ import click
 from pandas import DataFrame
 from pandas.io.formats.style import Styler
 
+from precise_bet.util import mkdir
+
 
 def save_message(path: Path, func: Callable):
     click.echo('正在保存数据...')
-    save_dir = path / '..'
-    if not save_dir.exists():
-        path.mkdir()
-    elif not save_dir.is_dir():
-        click.echo('路径错误', err=True)
-        return
+    mkdir(path.parent)
     click.echo(f'正在保存到 {path} ...')
     func()
 

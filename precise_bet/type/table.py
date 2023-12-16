@@ -154,24 +154,24 @@ class ProjectTable(Table, ABC):
         self.save_to_dir(self.project_path)
 
 
-class VolumeTable(ProjectTable, ABC):
-    volume_number: int
+# class VolumeTable(ProjectTable, ABC):
+#     volume_number: int
+#
+#     def __init__(self, project_path: Path, volume_number: int):
+#         super().__init__(project_path)
+#         self.volume_number = volume_number
+#
+#     def read(self):
+#         return self.read_from_dir(self.project_path / str(self.volume_number))
+#
+#     def read_or_create(self):
+#         return self.read_from_dir_or_create(self.project_path / str(self.volume_number))
+#
+#     def save(self):
+#         self.save_to_dir(self.project_path / str(self.volume_number))
 
-    def __init__(self, project_path: Path, volume_number: int):
-        super().__init__(project_path)
-        self.volume_number = volume_number
 
-    def read(self):
-        return self.read_from_dir(self.project_path / str(self.volume_number))
-
-    def read_or_create(self):
-        return self.read_from_dir_or_create(self.project_path / str(self.volume_number))
-
-    def save(self):
-        self.save_to_dir(self.project_path / str(self.volume_number))
-
-
-class MatchTable(VolumeTable, ABC):
+class MatchTable(ProjectTable, ABC):
     match_id = Column('代号', str, ColumnOrder.index)
 
     index_ = match_id
@@ -186,6 +186,7 @@ class MatchTable(VolumeTable, ABC):
 class DataTable(MatchTable):
     name_ = 'data'
 
+    volume_number = Column('期号', int)
     match_number = Column('场次', int)
     league_id = Column('赛事', str)
     round_number = Column('轮次', str)

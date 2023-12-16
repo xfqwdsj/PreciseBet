@@ -14,7 +14,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
-import textwrap
 from pathlib import Path
 from typing import Annotated
 
@@ -28,15 +27,11 @@ from precise_bet import __version__, rprint
 from precise_bet.cli import export, flow, generate_data, update
 from precise_bet.type import match_status_dict
 
-notice = f'{textwrap.fill(f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)')}\n\n' \
-         f'{textwrap.fill(
-             'This program comes with ABSOLUTELY NO WARRANTY.  '
-             'This is free software, and you are welcome to redistribute it under certain conditions.'
-         )}\n\n' \
-         f'{textwrap.fill(
-             'You should have received a copy of the GNU General Public License along  with this program.  '
-             f'Type `{sys.argv[0]} license\' to read.  If not, see <https://www.gnu.org/licenses/>.'
-         )}\n\n'
+notice = f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)\n\n' \
+         'This program comes with ABSOLUTELY NO WARRANTY. ' \
+         'This is free software, and you are welcome to redistribute it under certain conditions.\n\n' \
+         f'You should have received a copy of the GNU General Public License along  with this program. ' \
+         f'Type `{sys.argv[0]} license\' to read.  If not, see <https://www.gnu.org/licenses/>.\n\n'
 
 cli = typer.Typer(rich_markup_mode='markdown')
 
@@ -53,25 +48,25 @@ def cli_main(
 
     1. 生成数据
 
-       ```shell
+       ```
        precise_bet generate-data --help
        ```
 
     2. 更新数据
 
-       ```shell
+       ```
        precise_bet update --help
        ```
 
     3. 导出数据
 
-       ```shell
+       ```
        precise_bet export --help
        ```
 
     ## 傻瓜式工作流
 
-    ```shell
+    ```
     precise_bet flow --help
     ```
     """

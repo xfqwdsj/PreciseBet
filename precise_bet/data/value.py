@@ -2,7 +2,7 @@
 
 import regex
 
-from precise_bet import rprint, rprint_err
+from precise_bet import rprint
 from precise_bet.util import request_content
 
 
@@ -17,13 +17,13 @@ def get_team_value(team_id: int, ua: str) -> int:
     if name:
         rprint(f'球队名称为 [bold blue]{name.group(1)}[/bold blue]')
     else:
-        rprint_err('未找到球队名称')
+        rprint('[bold yellow]未找到球队名称')
 
     rprint('正在匹配...')
 
     value = regex.search(r'球队身价：&euro; (\d+)万', text)
     if value is None:
-        rprint_err('匹配失败。将该球队价值设为 0')
+        rprint('[bold yellow]匹配失败。将该球队价值设为 0')
         return 0
 
     return int(value.group(1))

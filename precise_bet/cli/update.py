@@ -13,8 +13,9 @@ import typer
 from fake_useragent import UserAgent
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeElapsedColumn, TimeRemainingColumn
 
-from precise_bet import rprint
+from precise_bet import rprint, rule, stdout_console
 from precise_bet.data import get_match_handicap, get_team_value, save_to_csv
 from precise_bet.type import DataTable, HandicapTable, MatchInformationTable, ProjectTable, TeamTable, UpdatableTable, \
     ValueTable, match_status_dict
@@ -237,19 +238,26 @@ def update(
         else:
             interval_list.append(Interval(interval + delta, False))
 
-    def get_eta(progress: int) -> timedelta:
-        return timedelta(seconds=sum([_i.seconds for _i in interval_list]) + (len(data) - progress) * 2)
-
-    initial_eta = get_eta(0)
+    interval_sum = sum([_i.seconds for _i in interval_list])
 
     rprint(f'本次更新将使用 {extra_interval_count} 次额外更新间隔')
 
     start_time = datetime.now()
 
-    with typer.progressbar(data.index, show_eta=False, show_percent=True, show_pos=True) as indexes:
-        eta = initial_eta
-        for index, match_id in enumerate(indexes):
-            rprint(f'   预计全部更新还需要 {eta}')
+    with Progress(
+            TextColumn("[progress.description]{task.description}"), BarColumn(), TaskProgressColumn(),
+            TimeElapsedColumn(), TimeRemainingColumn(), console=stdout_console, auto_refresh=False
+    ) as progress:
+        task = progress.add_task(
+            f'正在更新{action.name}（按下 [bold]Ctrl[/bold] + [bold]C[/bold] 中断）...', total=len(data) + interval_sum
+        )
+
+        def advance():
+            progress.advance(task)
+            progress.refresh()
+
+        for index, match_id in enumerate(data.index):
+            rule(f'正在更新第 [yellow]{index + 1}[/yellow] / [blue]{len(data)}[/blue] 场比赛')
 
             host_name = team_data.loc[global_data.loc[match_id, DataTable.host_id], TeamTable.name]
             guest_name = team_data.loc[global_data.loc[match_id, DataTable.guest_id], TeamTable.name]
@@ -272,24 +280,19 @@ def update(
                 rprint('更新后：')
             rprint(f'[bold blue]{after}')
 
+            advance()
+
             if index == len(data) - 1:
                 break
 
             current_interval = interval_list[0]
             if current_interval.extra:
                 rprint('[yellow]将使用额外更新间隔，请耐心等待')
-            sleep(current_interval.seconds)
+            sleep(current_interval.seconds, lambda _: advance())
             interval_list.pop(0)
-            eta = get_eta(index + 1)
 
             if random_ua:
                 ua = UserAgent().random
 
     used_time = datetime.now() - start_time
-    rprint(f'更新完成，用时 {used_time}，', end='')
-    if used_time > initial_eta:
-        rprint(f'[yellow]超出[/yellow]预计时间 {used_time - initial_eta}')
-    elif used_time < initial_eta:
-        rprint(f'[blue]少于[/blue]预计时间 {initial_eta - used_time}')
-    else:
-        rprint('[bold green]正巧与预计时间相等')
+    rprint(f'更新完成，用时 {used_time}')

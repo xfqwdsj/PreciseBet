@@ -4,5 +4,9 @@ from rich.console import Console
 
 from .info import __author__, __copyright__, __version__
 
-rprint = Console().print
-rprint_err = Console(stderr=True).print
+stdout_console = Console()
+rprint = stdout_console.print
+rule = stdout_console.rule
+
+stderr_console = Console(stderr=True)
+rprint_err = stderr_console.print

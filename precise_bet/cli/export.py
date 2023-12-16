@@ -284,8 +284,9 @@ def export(
 
         if file_format == Special:
             index = data.reset_index().index[data[DataTable.match_status] == match_status_dict[4]][-1]
-            active_cell = f'A{index + 2}'
+            active_cell = f'A{index + 3}'
             rprint(f'正在设置活动单元格：[bold]{active_cell}[/bold] ...')
+            # noinspection PyPep8Naming
             worksheet.views.sheetView[0].topLeftCell = active_cell
             for selection in worksheet.views.sheetView[0].selection:
                 selection.activeCell = active_cell

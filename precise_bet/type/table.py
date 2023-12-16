@@ -12,8 +12,6 @@ import pandas as pd
 # noinspection PyProtectedMember
 from pandas._typing import Dtype
 
-from precise_bet.data import save
-
 match_status_dict = {
     0: '未开始', 1: '上半场', 2: '中场', 3: '下半场', 4: '已结束', 5: '5', 6: '改期', 7: '腰斩', 8: '中断', 9: '待定',
     10: '10', 11: '11', 12: '点球'
@@ -131,6 +129,8 @@ class Table(pd.DataFrame, ABC):
             return self.create()
 
     def save_to_file(self, file: Path):
+        from precise_bet.data import save
+
         save(self, file, lambda d, p: d.to_csv(p))
 
     def save_to_dir(self, path: Path):

@@ -1,5 +1,5 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
-
+import inspect
 from abc import ABC
 from datetime import datetime
 from enum import Enum
@@ -8,6 +8,7 @@ from typing import Annotated
 
 import pandas as pd
 import typer
+from openpyxl.worksheet.worksheet import Worksheet
 
 from precise_bet import rprint
 from precise_bet.data import save_message, save_to_csv
@@ -33,6 +34,14 @@ middle = 'vertical-align: middle;'
 
 class ExportFileFormat(ABC):
     extension: str
+
+    def __hash__(self):
+        return hash(self.__class__)
+
+    def __eq__(self, other):
+        if inspect.isclass(other):
+            return issubclass(other, self.__class__) or issubclass(self.__class__, other)
+        return super().__eq__(other)
 
 
 class Csv(ExportFileFormat):
@@ -93,7 +102,7 @@ def export(
         else:
             return '负'
 
-    if file_format is not Special:
+    if file_format != Special:
         handicap_name = data[DataTable.handicap_name]
         data.drop(columns=[DataTable.handicap_name], inplace=True)
 
@@ -102,49 +111,49 @@ def export(
     data.insert(8, '比分', score_str)
     data[OddTable.class_columns()] = odd[OddTable.class_columns()]
     data['结果'] = data['比分'].apply(calculate_result)
-    placeholder = '-' if file_format == 'csv' else ''
+    placeholder = '-' if file_format == Csv else ''
     data.loc[data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
     data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
-    if file_format is not Special:
+    if file_format != Special:
         # noinspection PyUnboundLocalVariable
         data[DataTable.handicap_name] = handicap_name
     data[HandicapTable.class_columns()[:3]] = handicap[HandicapTable.class_columns()[:3]]
-    if file_format is Special:
+    if file_format == Special:
         data['空列1'] = ''
         data['空列2'] = ''
     data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
-    rprint(f'正在整合数据{'并添加样式' if file_format is Excel else ''}...')
+    rprint(f'正在整合数据{'并添加样式' if file_format == Excel else ''}...')
 
     timezone = datetime.now().astimezone().tzinfo
 
     data[DataTable.match_time] = pd.to_datetime(data[DataTable.match_time], unit='s', utc=True).dt.tz_convert(timezone)
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
-    if file_format is Special:
+    if file_format == Special:
         data['全场比分'] = data['比分']
 
     half_score = data[DataTable.half_score]
-    if file_format is Excel:
+    if file_format == Excel:
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
-    if file_format is Special:
+    if file_format == Special:
         data.drop(columns=[DataTable.half_score], inplace=True)
     data[DataTable.half_score] = half_score
 
-    if file_format is Special:
+    if file_format == Special:
         handicap_name = data[DataTable.handicap_name]
         data.drop(columns=[DataTable.handicap_name], inplace=True)
         data[DataTable.handicap_name] = handicap_name
 
     status = data[DataTable.match_status].map(match_status_dict)
-    if file_format is Special:
+    if file_format == Special:
         data.drop(columns=[DataTable.match_status], inplace=True)
     data[DataTable.match_status] = status
 
-    if file_format == 'csv':
+    if file_format == Csv:
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
         save_to_csv(data, project_path, file_name)
-    elif file_format is Excel:
+    elif file_format == Excel:
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
         league_styles = league_styles.apply(
@@ -158,7 +167,7 @@ def export(
 
         def append_team_style(name: str, style_list: list):
             team_color = ''
-            if file_format is Special:
+            if file_format == Special:
                 if '(+1)' in name:
                     team_color = handicapped_point_color
                 elif '(-1)' in name:
@@ -172,7 +181,7 @@ def export(
             append_team_style(guest, guest_style)
 
         handicap_style = []
-        if file_format is Special:
+        if file_format == Special:
             empty_column_style = []
         for match_id in data.index:
             color = ''
@@ -181,7 +190,7 @@ def export(
             elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
                 if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                     color = handicap_highlight_color
-            if file_format is Special:
+            if file_format == Special:
                 # noinspection PyUnboundLocalVariable
                 empty_column_style.append(color)
             if color == '':
@@ -216,7 +225,7 @@ def export(
         style.apply(lambda _: lose_style, subset=[OddTable.lose])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
-        if file_format is Special:
+        if file_format == Special:
             style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['全场比分'])
             style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].astype(str).str.zfill(3)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
@@ -232,7 +241,7 @@ def export(
 
         style.to_excel(writer, sheet_name=exported_time)
 
-        worksheet = writer.sheets[exported_time]
+        worksheet: Worksheet = writer.sheets[exported_time]
 
         for cell in worksheet[columns[DataTable.match_time]]:
             cell.number_format = 'yyyy/m/d h:mm'
@@ -260,16 +269,16 @@ def export(
         for column in [columns['比分'], columns[DataTable.half_score]]:
             worksheet.column_dimensions[column].width = 4
 
-        if file_format is Special:
+        if file_format == Special:
             worksheet.column_dimensions[columns['全场比分']].width = 4
 
         for i in range(3):
             worksheet.column_dimensions[chr(ord(columns[OddTable.win]) + i)].width = 6
 
-        for i in range(6 if not file_format is Special else 8):
+        for i in range(6 if file_format == Special else 8):
             worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6
 
-        if file_format is Special:
+        if file_format == Special:
             for i in range(2):
                 worksheet.column_dimensions[chr(ord(columns['空列1']) + i)].width = 0.001
 

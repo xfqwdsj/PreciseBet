@@ -109,7 +109,7 @@ class Interval:
 @optgroup.group('风控选项', help='指定更新时采取的风控机制')
 @optgroup.option('--interval', '-i', help='基准更新间隔（秒）', default=5, type=int)
 @optgroup.option('--extra-interval', '-e', help='额外更新间隔（秒）', default=60, type=int)
-@optgroup.option('--extra-interval-probability', '-p', help='额外更新间隔概率（0-1）', default=0.025, type=float)
+@optgroup.option('--extra-interval-probability', '-p', help='额外更新间隔概率（0-1）', default=0, type=float)
 @optgroup.option('--interval-offset-range', '-r', help='更新间隔偏移量范围（秒）', default=2, type=int)
 @optgroup.option('--random-ua', help='随机 UA', is_flag=True)
 @optgroup.group('更新选项', help='指定更新时采取的策略')

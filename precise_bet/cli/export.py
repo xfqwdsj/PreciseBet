@@ -282,4 +282,13 @@ def export(
             for i in range(2):
                 worksheet.column_dimensions[chr(ord(columns['空列1']) + i)].width = 0.001
 
+        if file_format == Special:
+            index = data.reset_index().index[data[DataTable.match_status] == match_status_dict[4]][-1]
+            active_cell = f'A{index + 2}'
+            rprint(f'正在设置活动单元格：[bold]{active_cell}[/bold] ...')
+            worksheet.views.sheetView[0].topLeftCell = active_cell
+            for selection in worksheet.views.sheetView[0].selection:
+                selection.activeCell = active_cell
+                selection.sqref = active_cell
+
         save_message(path, lambda: writer.close())

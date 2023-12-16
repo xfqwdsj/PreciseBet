@@ -23,8 +23,10 @@ def start_building():
     version = semver_version.replace(prerelease=None, build=None)
     version_hash = int(hashlib.sha256(f'{semver_version.prerelease}{semver_version.build}'.encode()).hexdigest(), 16)
     version = f'{version}.{version_hash}'
-    create_versionfile(output_file='version_file.txt', version=version, company_name=precise_bet.__author__,
-                       file_description=f'PreciseBet {precise_bet.__version__}', internal_name='PreciseBet',
-                       legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe',
-                       product_name='PreciseBet', translations=[0x0804, 1200])
+    create_versionfile(
+        output_file='version_file.txt', version=version, company_name=precise_bet.__author__,
+        file_description=f'PreciseBet {precise_bet.__version__}', internal_name='PreciseBet',
+        legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe', product_name='PreciseBet',
+        translations=[0x0804, 1200]
+    )
     PyInstaller.__main__.run(['main.spec', '--noconfirm'])

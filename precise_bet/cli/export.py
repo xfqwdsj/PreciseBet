@@ -7,8 +7,9 @@ import click
 import pandas as pd
 from click_option_group import optgroup
 
-from precise_bet.data import DataTable, HandicapTable, LeagueTable, MatchTable, OddTable, ScoreTable, ValueTable, \
-    match_status_dict, save_message, save_to_csv
+from precise_bet.data import save_message, save_to_csv
+from precise_bet.type import DataTable, HandicapTable, LeagueTable, MatchTable, OddTable, ScoreTable, ValueTable, \
+    match_status_dict
 
 red = 'color: #FF0000;'
 handicapped_point_color = 'color: #2F75B5;'
@@ -35,8 +36,10 @@ def is_excel(file_format: str):
 @click.pass_context
 @optgroup.group('导出选项', help='指定导出时使用的选项')
 @optgroup.option('--file-name', '-n', help='导出文件名', default='data', type=str)
-@optgroup.option('--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
-                 type=click.Choice(['csv', 'excel', 'special']))
+@optgroup.option(
+    '--file-format', '-f', help='导出文件格式', prompt='请输入文件格式', default='csv',
+    type=click.Choice(['csv', 'excel', 'special'])
+)
 def export(ctx, file_name: str, file_format: str):
     """
     导出数据
@@ -138,8 +141,10 @@ def export(ctx, file_name: str, file_format: str):
     elif is_excel(file_format):
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
-        league_styles = league_styles.apply(lambda x: f'color: white;background-color: {x};'
-                                                      f'{ya_hei}{nine_point}{center}{middle}')
+        league_styles = league_styles.apply(
+            lambda x: f'color: white;background-color: {x};'
+                      f'{ya_hei}{nine_point}{center}{middle}'
+        )
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
 
         host_style = []
@@ -184,8 +189,9 @@ def export(ctx, file_name: str, file_format: str):
 
         length = len(data)
         style = data.style
-        style.apply(lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length,
-                    subset=['期号', DataTable.match_number])
+        style.apply(
+            lambda _: [f'{ya_hei}{nine_point}{center}{middle}'] * length, subset=['期号', DataTable.match_number]
+        )
         style.apply(lambda _: league_styles, subset=[DataTable.league_id])
         style.apply(lambda _: [f'{nine_point}{left}{middle}'] * length, subset=[DataTable.round_number])
         style.apply(lambda _: [f'{calibri}{nine_point}{left}{middle}'] * length, subset=[DataTable.match_time])
@@ -193,8 +199,10 @@ def export(ctx, file_name: str, file_format: str):
         style.apply(lambda _: guest_style, subset=[DataTable.guest_name])
         style.apply(lambda _: [f'{ya_hei}{nine_point}{left}{middle}'] * length, subset=[DataTable.handicap_name])
         style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['比分'])
-        style.apply(lambda _: [f'{calibri}{half_score_color}{ten_point}{center}{middle}'] * length,
-                    subset=[DataTable.half_score])
+        style.apply(
+            lambda _: [f'{calibri}{half_score_color}{ten_point}{center}{middle}'] * length,
+            subset=[DataTable.half_score]
+        )
         style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
         style.apply(lambda _: win_style, subset=[OddTable.win])
         style.apply(lambda _: draw_style, subset=[OddTable.draw])

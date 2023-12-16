@@ -13,10 +13,9 @@ import pandas as pd
 from click_option_group import optgroup
 from fake_useragent import UserAgent
 
-from precise_bet.data import DataTable, HandicapTable, TeamTable, ValueTable, get_match_handicap, get_team_value, \
-    match_status_dict, save_to_csv
-from precise_bet.data.table import MatchInformationTable, UpdatableTable, VolumeTable
-from precise_bet.type import EnumChoice
+from precise_bet.data import get_match_handicap, get_team_value, save_to_csv
+from precise_bet.type import DataTable, EnumChoice, HandicapTable, MatchInformationTable, TeamTable, UpdatableTable, \
+    ValueTable, VolumeTable, match_status_dict
 from precise_bet.util import sleep
 
 AT = TypeVar('AT', bound=VolumeTable)
@@ -101,18 +100,25 @@ class Interval:
 @optgroup.option('--interval-offset-range', '-r', help='更新间隔偏移量范围（秒）', default=2, type=int)
 @optgroup.option('--random-ua', help='随机 UA', is_flag=True)
 @optgroup.group('更新选项', help='指定更新时采取的策略')
-@optgroup.option('--last-updated-status', '-s',
-                 help='指定要更新/排除上次更新时是哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）',
-                 default='0,1,2,3,12', type=str)
-@optgroup.option('--status', help='指定要更新/排除哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）',
-                 default='e1,2,3,12', type=str)
-@optgroup.option('--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（设为 0 以忽略，时）', default=6,
-                 type=int)
+@optgroup.option(
+    '--last-updated-status', '-s',
+    help='指定要更新/排除上次更新时是哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）', default='0,1,2,3,12',
+    type=str
+)
+@optgroup.option(
+    '--status', help='指定要更新/排除哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）', default='e1,2,3,12',
+    type=str
+)
+@optgroup.option(
+    '--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（设为 0 以忽略，时）', default=6, type=int
+)
 @optgroup.option('--only-new', '-n', help='只更新从未获取过的比赛', is_flag=True)
 @optgroup.option('--limit-count', '-m', help='指定要更新多少场比赛（设为 0 以忽略）', default=0, type=int)
-def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, extra_interval: int,
-           extra_interval_probability: float, interval_offset_range: int, random_ua: bool, last_updated_status: str,
-           status: str, break_hours: int, only_new: bool, limit_count: int):
+def update(
+        ctx, action: Action, debug: bool, volume_number: int, interval: int, extra_interval: int,
+        extra_interval_probability: float, interval_offset_range: int, random_ua: bool, last_updated_status: str,
+        status: str, break_hours: int, only_new: bool, limit_count: int
+):
     """
     更新数据
 
@@ -182,8 +188,9 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
         processing_data = processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0]
     processing_data = processing_data.loc[
         (global_data[DataTable.match_status] != 0) | (global_data[DataTable.match_time] < break_time)]
-    processing_data.sort_values(by=[DataTable.match_status, MatchInformationTable.updated_time],
-                                ascending=[False, True], inplace=True)
+    processing_data.sort_values(
+        by=[DataTable.match_status, MatchInformationTable.updated_time], ascending=[False, True], inplace=True
+    )
 
     if limit_count > 0:
         processing_data = processing_data.iloc[:limit_count]
@@ -196,7 +203,8 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
     data_analysis.loc['从未获取'] = len(processing_data.loc[processing_data[UpdatableTable.updated_time] == -1.0])
     for status in processing_data[DataTable.match_status].unique():
         data_analysis.loc[match_status_dict[status]] = len(
-            processing_data.loc[processing_data[DataTable.match_status] == status])
+            processing_data.loc[processing_data[DataTable.match_status] == status]
+        )
 
     click.echo()
 
@@ -207,8 +215,9 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
 
     click.echo(f'本次更新将采取基准更新间隔 {click.style(str(interval), fg="blue", bold=True)} 秒，', nl=False)
     click.echo(f'额外更新间隔 {click.style(str(extra_interval), fg="blue", bold=True)} 秒，', nl=False)
-    click.echo(f'使用额外更新间隔的概率 {click.style(str(extra_interval_probability), fg="blue", bold=True)}，',
-               nl=False)
+    click.echo(
+        f'使用额外更新间隔的概率 {click.style(str(extra_interval_probability), fg="blue", bold=True)}，', nl=False
+    )
     click.echo(f'更新间隔偏移量范围 {click.style(str(interval_offset_range), fg="blue", bold=True)} 秒，', nl=False)
     if len(last_updated_status_list) > 0:
         status_text_list = [match_status_dict[status] for status in list(set(last_updated_status_list) - {-1})]
@@ -267,8 +276,9 @@ def update(ctx, action: Action, debug: bool, volume_number: int, interval: int, 
 
             host_name = team_data.loc[global_data.loc[match_id, DataTable.host_id], TeamTable.name]
             guest_name = team_data.loc[global_data.loc[match_id, DataTable.guest_id], TeamTable.name]
-            status = click.style(match_status_dict[global_data.loc[match_id, DataTable.match_status]], fg='blue',
-                                 bold=True)
+            status = click.style(
+                match_status_dict[global_data.loc[match_id, DataTable.match_status]], fg='blue', bold=True
+            )
 
             click.echo(f'正在更新代号为 {match_id} 的比赛（{host_name} VS {guest_name}，{status}）的{action.name}信息...')
 

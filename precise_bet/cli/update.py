@@ -123,9 +123,9 @@ def update(
         random_ua: Annotated[bool, typer.Option(help='随机 UA')] = False,
         last_updated_status: Annotated[str, typer.Option(
             help='指定要更新/排除上次更新时是哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）'
-        )] = '0,1,2,3,12', status: Annotated[str, typer.Option(
+        )] = '0,1,2,3,10,11,12', status: Annotated[str, typer.Option(
             help='指定要更新/排除哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）'
-        )] = 'e1,2,3,12', break_hours: Annotated[
+        )] = 'e1,2,3,10,11,12', break_hours: Annotated[
             int, typer.Option('--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（设为 0 以忽略，时）')] = 6,
         only_new: Annotated[bool, typer.Option('--only-new', '-n', help='只更新从未获取过的比赛')] = False,
         limit_count: Annotated[Optional[int], typer.Option('--limit-count', '-m', help='指定要更新多少场比赛')] = None

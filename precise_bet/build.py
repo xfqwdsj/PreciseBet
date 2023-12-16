@@ -29,4 +29,4 @@ def start_building():
         legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe', product_name='PreciseBet',
         translations=[0x0804, 1200]
     )
-    PyInstaller.__main__.run(['main.spec', '--noconfirm'])
+    PyInstaller.__main__.run(['buildfile.py', '--noconfirm'])

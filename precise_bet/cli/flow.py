@@ -1,4 +1,5 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import typer
 
 from precise_bet.cli.export import ExportFileFormats, export

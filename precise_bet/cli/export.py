@@ -11,7 +11,7 @@ import typer
 from openpyxl.worksheet.worksheet import Worksheet
 
 from precise_bet import rprint
-from precise_bet.data import save_message, save_to_csv
+from precise_bet.data import save_message, save_to_csv, save_to_html
 from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, ValueTable, match_status_dict
 from precise_bet.util import mkdir
 
@@ -44,11 +44,23 @@ class ExportFileFormat(ABC):
         return super().__eq__(other)
 
 
-class Csv(ExportFileFormat):
+class TextBasedFormat(ExportFileFormat, ABC):
+    pass
+
+
+class Csv(TextBasedFormat):
     extension = 'csv'
 
 
-class Excel(ExportFileFormat):
+class StyledFormat(ExportFileFormat, ABC):
+    pass
+
+
+class Html(StyledFormat):
+    extension = 'html'
+
+
+class Excel(StyledFormat):
     extension = 'xlsx'
 
 
@@ -58,6 +70,7 @@ class Special(Excel):
 
 class ExportFileFormats(Enum):
     csv = Csv()
+    html = Html()
     excel = Excel()
     special = Special()
 
@@ -111,7 +124,7 @@ def export(
     data.insert(data.columns.get_loc(DataTable.guest_name), '比分', score_str)
     data[OddTable.class_columns()] = odd[OddTable.class_columns()]
     data['结果'] = data['比分'].apply(calculate_result)
-    placeholder = '-' if file_format == Csv else ''
+    placeholder = '-' if file_format == TextBasedFormat else ''
     data.loc[data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
     data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
     if file_format != Special:
@@ -123,7 +136,7 @@ def export(
         data['空列2'] = ''
     data[HandicapTable.class_columns()[3:]] = handicap[HandicapTable.class_columns()[3:]]
 
-    rprint(f'正在整合数据{'并添加样式' if file_format == Excel else ''}...')
+    rprint(f'正在整合数据{'并添加样式' if file_format == StyledFormat else ''}...')
 
     timezone = datetime.now().astimezone().tzinfo
 
@@ -134,7 +147,7 @@ def export(
         data['全场比分'] = data['比分']
 
     half_score = data[DataTable.half_score]
-    if file_format == Excel:
+    if file_format == StyledFormat:
         half_score = half_score.apply(lambda x: '' if x == '-' else x)
     if file_format == Special:
         data.drop(columns=[DataTable.half_score], inplace=True)
@@ -153,7 +166,7 @@ def export(
     if file_format == Csv:
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
         save_to_csv(data, project_path, file_name)
-    elif file_format == Excel:
+    elif file_format == StyledFormat:
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
         league_styles = league_styles.apply(
@@ -229,6 +242,10 @@ def export(
             style.apply(lambda _: [f'{calibri}{red}{ten_point}{center}{middle}'] * length, subset=['全场比分'])
             style.data[DataTable.match_number] = '北单' + style.data[DataTable.match_number].astype(str).str.zfill(3)
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
+
+        if file_format == Html:
+            save_to_html(style, project_path, file_name)
+            return
 
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')
 

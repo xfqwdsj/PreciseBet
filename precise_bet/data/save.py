@@ -21,6 +21,10 @@ def save(data: DataFrame | Styler, path: Path, func: Callable):
     save_message(path, lambda: func(data, path))
 
 
+def save_to_html(data: DataFrame | Styler, path: Path, file_name: str):
+    save(data, path / f'{file_name}.html', lambda d, p: d.to_html(p))
+
+
 def save_to_excel(data: DataFrame | Styler, path: Path, file_name: str):
     save(data, path / f'{file_name}.xlsx', lambda d, p: d.to_excel(p))
 

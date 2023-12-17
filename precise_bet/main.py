@@ -118,7 +118,12 @@ cli.command()(update)
 cli.command()(export)
 cli.command()(flow)
 
-if __name__ == '__main__':
+
+def main():
     rprint(notice, highlight=False)
 
     cli()
+
+
+if __name__ == '__main__':
+    main()

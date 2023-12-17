@@ -6,12 +6,13 @@ from PyInstaller.building.api import COLLECT, EXE, PYZ
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.utils.hooks import collect_data_files
 
-datas = [('LICENSE', '.')]
+datas = [('../LICENSE', '.')]
 datas += collect_data_files('fake_useragent')
+datas += collect_data_files('shellingham')
 
 a = Analysis(
-    ['main.py'], pathex=[], binaries=[], datas=datas, hiddenimports=['shellingham', 'tabulate'], hookspath=[],
-    hooksconfig={}, runtime_hooks=[], excludes=[], noarchive=False
+    ['main.py'], pathex=[], binaries=[], datas=datas, hiddenimports=['shellingham.nt', 'shellingham.posix', 'tabulate'],
+    hookspath=[], hooksconfig={}, runtime_hooks=[], excludes=[], noarchive=False
 )
 
 pyz = PYZ(a.pure)

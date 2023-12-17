@@ -10,8 +10,8 @@ datas = [('LICENSE', '.')]
 datas += collect_data_files('fake_useragent')
 
 a = Analysis(
-    ['main.py'], pathex=[], binaries=[], datas=datas, hiddenimports=['tabulate'], hookspath=[], hooksconfig={},
-    runtime_hooks=[], excludes=[], noarchive=False
+    ['main.py'], pathex=[], binaries=[], datas=datas, hiddenimports=['shellingham', 'tabulate'], hookspath=[],
+    hooksconfig={}, runtime_hooks=[], excludes=[], noarchive=False
 )
 
 pyz = PYZ(a.pure)

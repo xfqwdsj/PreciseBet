@@ -37,7 +37,7 @@ cli = typer.Typer(rich_markup_mode='markdown')
 
 
 @cli.callback()
-def cli_main(
+def main(
         ctx: typer.Context,
         project_path: Annotated[Path, typer.Option('--project-path', '-p', help='项目路径')] = './project/'
 ):
@@ -70,6 +70,8 @@ def cli_main(
     precise_bet flow --help
     ```
     """
+
+    rprint(notice, highlight=False)
 
     ctx.ensure_object(dict)
 
@@ -117,13 +119,6 @@ cli.command()(generate_data)
 cli.command()(update)
 cli.command()(export)
 cli.command()(flow)
-
-
-def main():
-    rprint(notice, highlight=False)
-
-    cli()
-
 
 if __name__ == '__main__':
     main()

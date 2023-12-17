@@ -23,7 +23,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.prompt import Confirm
 
-from precise_bet import __version__, rprint
+from precise_bet import __version__, rprint, stdout_console
 from precise_bet.cli import export, flow, generate_data, update
 from precise_bet.type import match_status_dict
 
@@ -74,7 +74,9 @@ def cli_main(
     ctx.ensure_object(dict)
 
     if project_path.exists() and not project_path.is_dir():
-        confirm = Confirm.ask(f'项目路径 [bold]{project_path}[/bold] 已存在且不是目录，是否删除？', default=False)
+        confirm = Confirm.ask(
+            f'项目路径 [bold]{project_path}[/bold] 已存在且不是目录，是否删除？', console=stdout_console, default=False
+        )
 
         if not confirm:
             rprint('已取消')
@@ -108,7 +110,7 @@ def show_license():
 def about():
     """显示关于信息"""
 
-    rprint(f'PreciseBet {__version__}')
+    rprint(f'PreciseBet [green]{__version__}', highlight=False)
 
 
 cli.command()(generate_data)
@@ -117,6 +119,6 @@ cli.command()(export)
 cli.command()(flow)
 
 if __name__ == '__main__':
-    rprint(notice)
+    rprint(notice, highlight=False)
 
     cli()

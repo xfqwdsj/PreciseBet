@@ -9,11 +9,12 @@ from typing import Annotated
 import pandas as pd
 import typer
 from openpyxl.worksheet.worksheet import Worksheet
+from rich.prompt import Confirm
 
-from precise_bet import rprint
+from precise_bet import rprint, stdout_console
 from precise_bet.data import save_message, save_to_csv, save_to_html
 from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, ValueTable, match_status_dict
-from precise_bet.util import mkdir
+from precise_bet.util import can_write, mkdir
 
 red = 'color: #FF0000;'
 handicapped_point_color = 'color: #2F75B5;'
@@ -49,7 +50,7 @@ class TextBasedFormat(ExportFileFormat, ABC):
 
 
 class Csv(TextBasedFormat):
-    extension = 'csv'
+    extension = '.csv'
 
 
 class StyledFormat(ExportFileFormat, ABC):
@@ -57,11 +58,11 @@ class StyledFormat(ExportFileFormat, ABC):
 
 
 class Html(StyledFormat):
-    extension = 'html'
+    extension = '.html'
 
 
 class Excel(StyledFormat):
-    extension = 'xlsx'
+    extension = '.xlsx'
 
 
 class Special(Excel):
@@ -92,6 +93,26 @@ def export(
     """导出数据"""
 
     project_path: Path = ctx.obj['project_path']
+
+    save_path = project_path / f'{file_name}{file_format.extension}'
+
+    if not can_write(save_path) and not Confirm.ask(
+            f'文件 [bold]{save_path}[/bold] 当前不可写入，是否继续？', console=stdout_console, default=False
+    ):
+        alternative: Path
+        for i in range(1, 100):
+            alternative = project_path / f'{file_name}{i}{file_format.extension}'
+            if can_write(alternative):
+                if Confirm.ask(
+                        f'是否保存到 [bold]{alternative}[/bold] ？', console=stdout_console, default=True
+                ):
+                    save_path = alternative
+                    break
+                else:
+                    rprint('已取消')
+                    return
+
+    mkdir(save_path.parent)
 
     rprint('开始导出数据...')
 
@@ -165,7 +186,7 @@ def export(
 
     if file_format == Csv:
         data[DataTable.league_id] = data[DataTable.league_id].map(league[LeagueTable.name])
-        save_to_csv(data, project_path, file_name)
+        save_to_csv(data, project_path, file_name, file_format.extension)
     elif file_format == StyledFormat:
         data[DataTable.match_time] = data[DataTable.match_time].dt.tz_localize(None)
         league_styles = data[DataTable.league_id].map(league[LeagueTable.color])
@@ -244,17 +265,14 @@ def export(
             style.apply(lambda _: empty_column_style, subset=['空列1', '空列2'])
 
         if file_format == Html:
-            save_to_html(style, project_path, file_name)
+            save_to_html(style, project_path, file_name, file_format.extension)
             return
 
         exported_time = datetime.now().strftime('%Y%m%d-%H%M%S')
 
-        path = project_path / f'{file_name}.xlsx'
-        mkdir(path.parent)
-
         columns = {column: chr(ord('B') + index) for index, column in enumerate(style.data.columns.values)}
 
-        writer = pd.ExcelWriter(path)
+        writer = pd.ExcelWriter(save_path)
 
         style.to_excel(writer, sheet_name=exported_time)
 
@@ -309,4 +327,4 @@ def export(
                 selection.activeCell = active_cell
                 selection.sqref = active_cell
 
-        save_message(path, lambda: writer.close())
+        save_message(save_path, lambda: writer.close())

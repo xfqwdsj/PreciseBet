@@ -11,3 +11,15 @@ def mkdir(path: Path):
     elif not path.is_dir():
         rprint_err('路径错误')
         return
+
+
+def can_write(path: Path):
+    exists = path.exists()
+    try:
+        with path.open(mode='a') as f:
+            f.close()
+            if not exists:
+                path.unlink()
+            return True
+    except PermissionError:
+        return False

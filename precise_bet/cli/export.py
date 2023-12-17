@@ -108,7 +108,7 @@ def export(
 
     # '+' 为特殊运算符，表示合并，不可替换为模板字符串
     score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
-    data.insert(8, '比分', score_str)
+    data.insert(data.columns.get_loc(DataTable.guest_name), '比分', score_str)
     data[OddTable.class_columns()] = odd[OddTable.class_columns()]
     data['结果'] = data['比分'].apply(calculate_result)
     placeholder = '-' if file_format == Csv else ''
@@ -283,7 +283,7 @@ def export(
                 worksheet.column_dimensions[chr(ord(columns['空列1']) + i)].width = 0.001
 
         if file_format == Special:
-            index = data.reset_index().index[data[DataTable.match_status] == match_status_dict[4]][-1]
+            index = data.index.get_loc(data.index[data[DataTable.match_status] == match_status_dict[4]][-1])
             active_cell = f'A{index + 3}'
             rprint(f'正在设置活动单元格：[bold]{active_cell}[/bold] ...')
             # noinspection PyPep8Naming

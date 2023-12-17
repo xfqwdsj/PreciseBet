@@ -24,6 +24,8 @@ def flow(
     error_times = 0
 
     while execute_times < 1 or executed_times < execute_times:
+        terminate = False
+
         try:
             retry_indicator = '[bold]从中断处继续[/bold]' if step > 0 else ''
             total_indicator = f' / [blue]{execute_times}[/blue]' if execute_times >= 1 else ''
@@ -50,6 +52,7 @@ def flow(
                     extra_interval_probability=extra_interval_probability
                 )
         except KeyboardInterrupt:
+            terminate = True
             rule('[bold red]正在中断，再次按下 [bold]Ctrl[/bold] + [bold]C[/bold] 强制中断')
             break
         except Exception as e:
@@ -63,8 +66,12 @@ def flow(
 
             step = 0
             error_times = 0
+        finally:
+            export(ctx, file_format=ExportFileFormats.special.value)
 
-            if flow_interval:
+            last = 1 <= execute_times == executed_times
+
+            if not last and flow_interval and not terminate and error_times == 0:
                 sleep(flow_interval)
 
-    export(ctx, file_format=ExportFileFormats.special.value)
+    rprint('[bold green]流程执行完毕')

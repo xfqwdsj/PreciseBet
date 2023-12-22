@@ -17,8 +17,10 @@ from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, T
 
 from precise_bet import rprint, rule, stdout_console
 from precise_bet.data import get_match_handicap, get_team_value, save_to_csv
-from precise_bet.type import DataTable, HandicapTable, MatchInformationTable, ProjectTable, TeamTable, UpdatableTable, \
-    ValueTable, match_status_dict
+from precise_bet.type import (
+    DataTable, HandicapTable, MatchInformationTable, ProjectTable, TeamTable, UpdatableTable, ValueTable,
+    match_status_dict
+)
 from precise_bet.util import sleep
 
 AT = TypeVar('AT', bound=ProjectTable)

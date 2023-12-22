@@ -126,7 +126,8 @@ def update(
             help='指定要更新/排除上次更新时是哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）'
         )] = '0,1,2,3,10,11,12', status: Annotated[str, typer.Option(
             help='指定要更新/排除哪些状态的比赛（以逗号分隔，在选项前加 `e` 切换排除模式）'
-        )] = 'e1,2,3,10,11,12', break_hours: Annotated[
+        )] = 'e1,2,3,10,11,12', handle_more_status_change: Annotated[
+            bool, typer.Option(help='处理更多状态变化（如从中断类状态重新开始）')] = True, break_hours: Annotated[
             int, typer.Option('--break-hours', '-b', help='指定要跳过多少小时后的未开始的比赛（设为 0 以忽略，时）')] = 6,
         only_new: Annotated[bool, typer.Option('--only-new', '-n', help='只更新从未获取过的比赛')] = False,
         limit_count: Annotated[Optional[int], typer.Option('--limit-count', '-m', help='指定要更新多少场比赛')] = None
@@ -165,8 +166,14 @@ def update(
 
     data[DataTable.match_status] = global_data[DataTable.match_status]
 
-    data = data.loc[data[MatchInformationTable.updated_match_status].isin(last_updated_status_list)]
-    data = data.loc[data[DataTable.match_status].isin(status_list)]
+    interrupted = data[MatchInformationTable.updated_match_status].isin([5, 6, 7, 8, 9])
+    interrupted_changed = -data[DataTable.match_status].isin([5, 6, 7, 8, 9])
+
+    more_status_change = interrupted & interrupted_changed & handle_more_status_change
+
+    data = data.loc[
+        data[MatchInformationTable.updated_match_status].isin(last_updated_status_list) | more_status_change]
+    data = data.loc[data[DataTable.match_status].isin(status_list) | more_status_change]
     if only_new:
         data = data.loc[data[UpdatableTable.updated_time] == -1.0]
     data = data.loc[(global_data[DataTable.match_status] != 0) | (global_data[DataTable.match_time] < break_time)]
@@ -183,6 +190,7 @@ def update(
     data_analysis = pd.DataFrame(columns=['数量'])
     data_analysis.loc['全部'] = len(data)
     data_analysis.loc['从未获取'] = len(data.loc[data[UpdatableTable.updated_time] == -1.0])
+    data_analysis.loc['重新开始'] = len(data.loc[more_status_change])
     for status in data[DataTable.match_status].unique():
         data_analysis.loc[match_status_dict[status]] = len(data.loc[data[DataTable.match_status] == status])
 
@@ -261,9 +269,14 @@ def update(
 
             host_name = team_data.loc[global_data.loc[match_id, DataTable.host_id], TeamTable.name]
             guest_name = team_data.loc[global_data.loc[match_id, DataTable.guest_id], TeamTable.name]
-            status = f'[bold blue]{match_status_dict[global_data.loc[match_id, DataTable.match_status]]}[/bold blue]'
 
-            rprint(f'正在更新代号为 {match_id} 的比赛（{host_name} VS {guest_name}，{status}）的{action.name}信息...')
+            current_status = global_data.loc[match_id, DataTable.match_status]
+            last_updated_status = data.loc[match_id, MatchInformationTable.updated_match_status]
+            current_status_text = f'[bold blue]{match_status_dict[current_status]}[/bold blue]'
+            last_updated_status_text = f'[bold yellow]{match_status_dict[last_updated_status]}[/bold yellow]'
+            status_text = f'比赛状态：{current_status_text}，上次更新时状态：{last_updated_status_text}'
+
+            rprint(f'正在更新代号为 {match_id} 的比赛（{host_name} VS {guest_name}，{status_text}）的{action.name}信息...')
 
             if data.loc[match_id, MatchInformationTable.updated_time] == -1.0:
                 rprint(f'该场比赛为从未获取过{action.name}的比赛')

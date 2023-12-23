@@ -163,7 +163,7 @@ def update(
         result.sort()
         return result
 
-    last_updated_status_list: list[int] = [-1] + init_status_list(last_updated_status)
+    last_updated_status_list: list[int] = [-2, -1] + init_status_list(last_updated_status)
     status_list: list[int] = init_status_list(status)
 
     data[DataTable.match_status] = global_data[DataTable.match_status]

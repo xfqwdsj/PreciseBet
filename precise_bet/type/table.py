@@ -13,8 +13,8 @@ import pandas as pd
 from pandas._typing import Dtype
 
 match_status_dict = {
-    -1: '无', 0: '未开始', 1: '上半场', 2: '中场', 3: '下半场', 4: '已结束', 5: '取消', 6: '改期', 7: '腰斩', 8: '中断',
-    9: '待定', 10: '加时赛开始', 11: '加时赛结束', 12: '点球'
+    -2: '从旧数据导入', -1: '无', 0: '未开始', 1: '上半场', 2: '中场', 3: '下半场', 4: '已结束', 5: '取消', 6: '改期',
+    7: '腰斩', 8: '中断', 9: '待定', 10: '加时赛开始', 11: '加时赛结束', 12: '点球'
 }
 
 
@@ -230,7 +230,7 @@ class ValueTable(MatchInformationTable):
 
     @classmethod
     def empty_row(cls):
-        return cls.generate_row(host_value=0, guest_value=0, updated_time=-1.0, updated_match_status=-1)
+        return cls.generate_row(host_value=-1, guest_value=-1, updated_time=-1.0, updated_match_status=-1)
 
     @classmethod
     def row_from_list(cls, value: list[int], updated_match_status: int):
@@ -266,8 +266,8 @@ class HandicapTable(MatchInformationTable):
     @classmethod
     def empty_row(cls):
         return cls.generate_row(
-            live_average_water1=0.0, live_average_handicap=0.0, live_average_water2=0.0, early_average_water1=0.0,
-            early_average_handicap=0.0, early_average_water2=0.0, updated_time=-1.0, updated_match_status=-1
+            live_average_water1=-1.0, live_average_handicap=-1.0, live_average_water2=-1.0, early_average_water1=-1.0,
+            early_average_handicap=-1.0, early_average_water2=-1.0, updated_time=-1.0, updated_match_status=-1
         )
 
     @classmethod

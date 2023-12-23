@@ -165,6 +165,12 @@ def export(
     data.drop(columns=[DataTable.host_id, DataTable.guest_id], inplace=True)
 
     if file_format == Special:
+        for column in ValueTable.class_columns():
+            data[column] = data[column].apply(lambda x: 0 if x == -1 else x)
+        for column in HandicapTable.class_columns():
+            data[column] = data[column].apply(lambda x: 0.0 if x == -1 else x)
+
+    if file_format == Special:
         data['全场比分'] = data['比分']
 
     half_score = data[DataTable.half_score]

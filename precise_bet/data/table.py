@@ -94,6 +94,10 @@ def parse_table(project_path: Path, html: str) -> DataSet:
 
         if match_id not in value.index:
             value.loc[match_id] = ValueTable.empty_row()
+            for column, team_id in zip([ValueTable.host_value, ValueTable.guest_value], [host_id, guest_id]):
+                if team_id in team.index and team.loc[team_id, TeamTable.value] != -1:
+                    value.loc[match_id, column] = team.loc[team_id, TeamTable.value]
+                    value.loc[match_id, ValueTable.updated_match_status] = -2
 
         if match_id not in handicap.index:
             handicap.loc[match_id] = HandicapTable.empty_row()
@@ -113,8 +117,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         else:
             team.loc[guest_id, TeamTable.name] = guest_tag.text
 
-    odd_json = regex.search(r'var liveOddsList = ({.*});', html).group(1)
-    odd_dict = eval(odd_json)
+    odd_dict = eval(regex.search(r'var liveOddsList = ({.*});', html).group(1))
     for match_id, odds in odd_dict.items():
         match_id = f'a{match_id}'
         odd_list = [0.0, 0.0, 0.0]

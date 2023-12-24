@@ -6,7 +6,9 @@ from hashlib import sha256
 from PyInstaller.building.api import COLLECT, EXE, PYZ
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.utils.hooks import collect_data_files
-from PyInstaller.utils.win32.versioninfo import VSVersionInfo
+# 用于 `eval` 函数解析 `version`
+# noinspection PyUnresolvedReferences
+from PyInstaller.utils.win32.versioninfo import *
 from pyinstaller_versionfile import MetaData, Writer
 from semver import Version
 
@@ -40,12 +42,10 @@ vers_writer = Writer(vers_metadata)
 vers_writer.render()
 
 # noinspection PyProtectedMember
-vers = VSVersionInfo().fromRaw(vers_writer._content)
-
 exe = EXE(
     pyz, a.scripts, [], exclude_binaries=True, name='precise_bet', debug=False, bootloader_ignore_signals=False,
     strip=False, upx=True, console=True, disable_windowed_traceback=False, argv_emulation=False, target_arch=None,
-    codesign_identity=None, entitlements_file=None, version=vers, contents_directory='files'
+    codesign_identity=None, entitlements_file=None, version=eval(vers_writer._content), contents_directory='files'
 )
 
 coll = COLLECT(

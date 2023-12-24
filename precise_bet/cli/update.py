@@ -99,11 +99,17 @@ class Actions(Enum):
     handicap_action = HandicapAction()
 
 
-def actions_parser(value: str) -> Action:
-    try:
-        return Actions[f'{value}_action'].value
-    except KeyError:
-        raise typer.BadParameter(f'无效的数据类型：{value}')
+def actions_parser(value: str) -> list[Action]:
+    actions = value.split(',')
+    result = []
+
+    for action in actions:
+        try:
+            result.append(Actions[f'{action}_action'].value)
+        except KeyError:
+            raise typer.BadParameter(f'无效的数据类型：{value}')
+
+    return result
 
 
 @dataclass
@@ -113,9 +119,9 @@ class Interval:
 
 
 def update(
-        ctx: typer.Context,
-        action: Annotated[Action, typer.Argument(help='要更新的数据类型', case_sensitive=False, parser=actions_parser)],
-        debug: Annotated[bool, typer.Option(help='调试模式')] = False,
+        ctx: typer.Context, actions: Annotated[list[Action], typer.Argument(
+            help='要更新的数据类型（以逗号分隔）', case_sensitive=False, parser=actions_parser
+        )], debug: Annotated[bool, typer.Option(help='调试模式')] = False,
         volume_number: Annotated[Optional[int], typer.Option('--volume-number', '-v', help='期号')] = None,
         interval: Annotated[int, typer.Option('--interval', '-i', help='基准更新间隔（秒）')] = 5,
         extra_interval: Annotated[int, typer.Option('--extra-interval', '-e', help='额外更新间隔（秒）')] = 60,
@@ -136,6 +142,10 @@ def update(
 ):
     """更新数据"""
 
+    if len(actions) == 0:
+        rprint('无事可做')
+        return
+
     project_path: Path = ctx.obj['project_path']
 
     global_data = DataTable(project_path).read()
@@ -146,8 +156,11 @@ def update(
 
     rprint('正在读取数据...')
 
-    action.assign(project_path=project_path)
-    data = action.filter(indexes=global_data.index)
+    datas: list[AT] = []
+
+    for action in actions:
+        action.assign(project_path=project_path)
+        datas.append(action.filter(indexes=global_data.index))
 
     if break_hours < 0:
         break_hours = 0

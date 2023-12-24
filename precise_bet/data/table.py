@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup, Tag
-# noinspection PyProtectedMember
 from regex import regex
 
 from precise_bet import rprint

@@ -2,4 +2,3 @@
 /build
 /dist
 */**/__pycache__
-/version_file.txt

@@ -1,15 +1,10 @@
 #  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
-import hashlib
 import os
 import sys
 from pathlib import Path
 
 import PyInstaller.__main__
-import semver
-from pyinstaller_versionfile import create_versionfile
-
-import precise_bet
 
 
 def build():
@@ -25,16 +20,6 @@ def start_building(working_dir: str):
 
     working_dir = Path(working_dir)
 
-    semver_version = semver.Version.parse(precise_bet.__version__)
-    version = semver_version.replace(prerelease=None, build=None)
-    version_hash = int(hashlib.sha256(f'{semver_version.prerelease}{semver_version.build}'.encode()).hexdigest(), 16)
-    version = f'{version}.{version_hash}'
-    create_versionfile(
-        output_file=working_dir / 'version_file.txt', version=version, company_name=precise_bet.__author__,
-        file_description=f'PreciseBet {precise_bet.__version__}', internal_name='PreciseBet',
-        legal_copyright=precise_bet.__copyright__, original_filename='precise_bet.exe', product_name='PreciseBet',
-        translations=[0x0804, 1200]
-    )
     py_file = working_dir / 'buildfile.py'
     spec_file = working_dir / 'buildfile.spec'
     if spec_file.exists():

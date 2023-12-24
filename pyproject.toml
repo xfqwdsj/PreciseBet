@@ -42,6 +42,7 @@ files = ["precise_bet/info.py"]
 [tool.poetry.scripts]
 precise_bet = "precise_bet.main:main"
 build = "precise_bet.build:build"
+build_one_file = "precise_bet.build:build_one_file"
 
 
 [build-system]

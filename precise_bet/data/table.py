@@ -71,6 +71,10 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         guest_id = int(urlparse(guest_tag['href']).path.split('/')[2])
 
         match_time = datetime.strptime(f'{str(volume_number)[:2]}{tds[3].text}', '%y%m-%d %H:%M')
+
+        if volume_number % 100 == 11 and match_time.month == 12:
+            match_time = match_time.replace(year=match_time.year - 1)
+
         match_timestamp = int(match_time.astimezone(ZoneInfo('Asia/Shanghai')).timestamp())
 
         score_tag = tds[6]

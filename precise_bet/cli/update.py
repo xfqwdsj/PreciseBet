@@ -178,6 +178,7 @@ def update(
     data = data.loc[data[DataTable.match_status].isin(status_list) | more_status_change]
     if only_new:
         data = data.loc[data[UpdatableTable.updated_time] == -1.0]
+    # TODO: 居然没有实现设为 0 的功能？？？
     data = data.loc[(global_data[DataTable.match_status] != 0) | (global_data[DataTable.match_time] < break_time)]
     data.sort_values(
         by=[DataTable.match_status, MatchInformationTable.updated_time], ascending=[False, True], inplace=True

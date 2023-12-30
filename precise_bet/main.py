@@ -24,7 +24,7 @@ from rich.markdown import Markdown
 from rich.prompt import Confirm
 
 from precise_bet import __version__, rprint, stdout_console
-from precise_bet.cli import export, flow, generate_data, update
+from precise_bet.cli import export, flow, generate_data, gui, update
 from precise_bet.type import match_status_dict
 
 notice = f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)\n\n' \
@@ -119,6 +119,7 @@ cli.command()(generate_data)
 cli.command()(update)
 cli.command()(export)
 cli.command()(flow)
+cli.command()(gui)
 
 
 def main():

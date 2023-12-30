@@ -10,8 +10,8 @@ from precise_bet.util import sleep
 
 
 def flow(
-        ctx: typer.Context, volume_number: int, full_update: bool = True, flow_interval: int = 0, retry_times: int = 3,
-        extra_interval_probability: float = 0, execute_times: int = 1, fast_mode: bool = False
+        ctx: typer.Context, volume_number: int, full_update: bool = True, execute_times: int = 1,
+        flow_interval: int = 0, retry_times: int = 3, extra_interval_probability: float = 0, fast_mode: bool = False
 ):
     """生成数据、更新数据、导出数据"""
 

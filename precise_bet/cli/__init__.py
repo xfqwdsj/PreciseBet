@@ -3,4 +3,5 @@
 from .export import export
 from .flow import flow
 from .generate_data import generate_data
+from .gui import gui
 from .update import update

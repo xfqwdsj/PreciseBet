@@ -11,9 +11,17 @@ from precise_bet.util import sleep
 
 def flow(
         ctx: typer.Context, volume_number: int, full_update: bool = True, flow_interval: int = 0, retry_times: int = 3,
-        extra_interval_probability: float = 0, execute_times: int = 1
+        extra_interval_probability: float = 0, execute_times: int = 1, fast_mode: bool = False
 ):
     """生成数据、更新数据、导出数据"""
+
+    additional_parameter_update = {}
+
+    if fast_mode:
+        extra_interval_probability = 0
+        additional_parameter_update['interval'] = 0
+        additional_parameter_update['interval_offset_range'] = 0
+        rprint('[bold yellow]已开启快速模式，请谨慎使用。如发现数据量过大，请立即按下 Ctrl + C 中断并使用默认模式继续更新')
 
     if retry_times < 0:
         retry_times = 0
@@ -42,14 +50,15 @@ def flow(
                 if full_update:
                     update(
                         ctx, action=UpdateActions.value_action.value, volume_number=volume_number,
-                        extra_interval_probability=extra_interval_probability, only_new=True
+                        extra_interval_probability=extra_interval_probability, only_new=True,
+                        **additional_parameter_update
                     )
                 step += 1
 
             if step == 2:
                 update(
                     ctx, action=UpdateActions.handicap_action.value, volume_number=volume_number,
-                    extra_interval_probability=extra_interval_probability
+                    extra_interval_probability=extra_interval_probability, **additional_parameter_update
                 )
         except KeyboardInterrupt:
             terminate = True

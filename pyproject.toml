@@ -28,6 +28,12 @@ pyinstaller-versionfile = "^2.1.1"
 semver = "^3.0.2"
 
 
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://mirrors.cernet.edu.cn/pypi/web/simple/"
+priority = "default"
+
 [tool.poetry-dynamic-versioning]
 vcs = "git"
 metadata = true

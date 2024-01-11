@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 import inspect
 from abc import ABC
 from datetime import datetime
@@ -230,6 +230,9 @@ def export(
             elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
                 if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
                     color = handicap_highlight_color
+                elif data.loc[match_id, HandicapTable.early_average_handicap] == 0:
+                    if data.loc[match_id, ValueTable.guest_value] > data.loc[match_id, ValueTable.host_value]:
+                        color = handicap_highlight_color
             if file_format == Special:
                 # noinspection PyUnboundLocalVariable
                 empty_column_style.append(color)

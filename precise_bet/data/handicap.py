@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 from bs4 import BeautifulSoup, Tag
 
@@ -20,6 +20,6 @@ def get_match_handicap(match_id: str, ua: str) -> list[float]:
     tds = soup.find('tr', attrs={'xls': 'footer'}).find_all('td')
 
     raw = [tds[3].text, tds[4].text, tds[5].text, tds[9].text, tds[10].text, tds[11].text]
-    handicap = [float(i) if i != ' ' else 0 for i in raw]
+    handicap = [float(i) if i.strip() != '' else 0 for i in raw]
 
     return handicap

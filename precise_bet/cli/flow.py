@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import typer
 
@@ -10,8 +10,9 @@ from precise_bet.util import sleep
 
 
 def flow(
-        ctx: typer.Context, volume_number: int, full_update: bool = True, execute_times: int = 1,
-        flow_interval: int = 0, retry_times: int = 3, extra_interval_probability: float = 0, fast_mode: bool = False
+        ctx: typer.Context, volume_number: int, update_value: bool = True, full_update: bool = True,
+        execute_times: int = 1, flow_interval: int = 0, retry_times: int = 3, extra_interval_probability: float = 0,
+        fast_mode: bool = False
 ):
     """生成数据、更新数据、导出数据"""
 
@@ -47,10 +48,10 @@ def flow(
                 step += 1
 
             if step == 1:
-                if full_update:
+                if update_value:
                     update(
                         ctx, action=UpdateActions.value_action.value, volume_number=volume_number,
-                        extra_interval_probability=extra_interval_probability, only_new=True,
+                        extra_interval_probability=extra_interval_probability, only_new=full_update,
                         **additional_parameter_update
                     )
                 step += 1

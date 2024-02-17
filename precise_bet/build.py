@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import os
 import sys
@@ -18,6 +18,7 @@ def build_one_file():
 
 
 def start_building(one_file: bool):
+    os.system('git reset HEAD')
     os.system('poetry dynamic-versioning')
 
     # 使用命令方式调用，使动态版本在代码中更新的值生效

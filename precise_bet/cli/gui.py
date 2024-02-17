@@ -25,6 +25,11 @@ def gui(ctx: typer.Context):
     entries['volume_number'][0].grid(row=row, column=1)
     row += 1
 
+    tk.Label(root, text='更新范围（时，默认 6）').grid(row=row)
+    entries['break_hours'] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries['break_hours'][0].grid(row=row, column=1)
+    row += 1
+
     tk.Label(root, text='更新球队价值（总开关）').grid(row=row)
     update_value = tk.BooleanVar(value=True)
     entries['update_value'] = (tk.Checkbutton(root, variable=update_value), lambda _: update_value.get())

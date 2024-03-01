@@ -95,6 +95,7 @@ def export(
     project_path: Path = ctx.obj['project_path']
 
     save_path = project_path / f'{file_name}{file_format.extension}'
+    mkdir(save_path.parent)
 
     if not can_write(save_path) and not Confirm.ask(
             f'文件 [bold]{save_path}[/bold] 当前不可写入，是否继续？', console=stdout_console, default=False
@@ -111,8 +112,6 @@ def export(
                 else:
                     rprint('已取消')
                     return
-
-    mkdir(save_path.parent)
 
     rprint('开始导出数据...')
 

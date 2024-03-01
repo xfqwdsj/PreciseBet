@@ -1,6 +1,7 @@
 #  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import tkinter as tk
+from pathlib import Path
 from typing import Callable
 
 import typer
@@ -71,7 +72,7 @@ def gui(ctx: typer.Context):
     def run_flow():
         project_path = entries['project_path'][0].get()
         if project_path:
-            ctx.obj['project_path'] = project_path
+            ctx.obj['project_path'] = Path(project_path)
 
         arguments = {}
 

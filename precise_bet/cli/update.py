@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import random
 from abc import ABC, abstractmethod
@@ -285,6 +285,7 @@ def update(
                 rprint(f'该场比赛为从未获取过{action.name}的比赛')
 
             before, after = action.update(match_id=match_id, global_data=global_data, team_data=team_data, ua=ua)
+            before = list(map(lambda x: '无' if pd.isna(x) else x, before))
 
             if before == after:
                 rprint(f'该场比赛的{action.name}信息未发生变化')

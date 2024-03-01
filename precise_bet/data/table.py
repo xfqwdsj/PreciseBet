@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -98,7 +98,7 @@ def parse_table(project_path: Path, html: str) -> DataSet:
         if match_id not in value.index:
             value.loc[match_id] = ValueTable.empty_row()
             for column, team_id in zip([ValueTable.host_value, ValueTable.guest_value], [host_id, guest_id]):
-                if team_id in team.index and team.loc[team_id, TeamTable.value] != -1:
+                if team_id in team.index and team.loc[team_id, TeamTable.value] is not None:
                     value.loc[match_id, column] = team.loc[team_id, TeamTable.value]
                     value.loc[match_id, ValueTable.updated_match_status] = -2
 

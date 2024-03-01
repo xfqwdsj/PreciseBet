@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 from abc import ABC
 from collections import OrderedDict
@@ -222,15 +222,15 @@ class ScoreTable(MatchInformationTable):
 class ValueTable(MatchInformationTable):
     name_ = 'value'
 
-    host_value = Column('主队价值', int)
-    guest_value = Column('客队价值', int)
+    host_value = Column('主队价值', pd.UInt32Dtype())
+    guest_value = Column('客队价值', pd.UInt32Dtype())
 
     def get_data(self, match_id: MatchTable.match_id.type) -> list[int]:
         return list(self.loc[match_id, self.class_columns()])
 
     @classmethod
     def empty_row(cls):
-        return cls.generate_row(host_value=-1, guest_value=-1, updated_time=-1.0, updated_match_status=-1)
+        return cls.generate_row(host_value=None, guest_value=None, updated_time=-1.0, updated_match_status=-1)
 
     @classmethod
     def row_from_list(cls, value: list[int], updated_match_status: int):
@@ -253,12 +253,12 @@ class ValueTable(MatchInformationTable):
 class HandicapTable(MatchInformationTable):
     name_ = 'handicap'
 
-    live_average_water1 = Column('平即水1', float)
-    live_average_handicap = Column('平即盘', float)
-    live_average_water2 = Column('平即水2', float)
-    early_average_water1 = Column('平初水1', float)
-    early_average_handicap = Column('平初盘', float)
-    early_average_water2 = Column('平初水2', float)
+    live_average_water1 = Column('平即水1', pd.Float32Dtype())
+    live_average_handicap = Column('平即盘', pd.Float32Dtype())
+    live_average_water2 = Column('平即水2', pd.Float32Dtype())
+    early_average_water1 = Column('平初水1', pd.Float32Dtype())
+    early_average_handicap = Column('平初盘', pd.Float32Dtype())
+    early_average_water2 = Column('平初水2', pd.Float32Dtype())
 
     def get_data(self, match_id: MatchTable.match_id.type) -> list[float]:
         return list(self.loc[match_id, self.class_columns()])
@@ -266,8 +266,8 @@ class HandicapTable(MatchInformationTable):
     @classmethod
     def empty_row(cls):
         return cls.generate_row(
-            live_average_water1=-1.0, live_average_handicap=-1.0, live_average_water2=-1.0, early_average_water1=-1.0,
-            early_average_handicap=-1.0, early_average_water2=-1.0, updated_time=-1.0, updated_match_status=-1
+            live_average_water1=None, live_average_handicap=None, live_average_water2=None, early_average_water1=None,
+            early_average_handicap=None, early_average_water2=None, updated_time=-1.0, updated_match_status=-1
         )
 
     @classmethod
@@ -326,13 +326,13 @@ class TeamTable(ProjectTable, NamedTable, UpdatableTable):
     name_ = 'team'
 
     team_id = Column('代号', int)
-    value = Column('价值', int)
+    value = Column('价值', pd.UInt32Dtype())
 
     index_ = team_id
 
     @classmethod
     def empty_row(cls, name: str):
-        return cls.generate_row(name=name, value=0, updated_time=-1.0)
+        return cls.generate_row(name=name, value=None, updated_time=-1.0)
 
     @classmethod
     def row_from_value(cls, value: int):

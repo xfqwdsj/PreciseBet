@@ -253,12 +253,12 @@ class ValueTable(MatchInformationTable):
 class HandicapTable(MatchInformationTable):
     name_ = 'handicap'
 
-    live_average_water1 = Column('平即水1', pd.Float32Dtype())
-    live_average_handicap = Column('平即盘', pd.Float32Dtype())
-    live_average_water2 = Column('平即水2', pd.Float32Dtype())
-    early_average_water1 = Column('平初水1', pd.Float32Dtype())
-    early_average_handicap = Column('平初盘', pd.Float32Dtype())
-    early_average_water2 = Column('平初水2', pd.Float32Dtype())
+    live_average_water1 = Column('平即水1', pd.Float64Dtype())
+    live_average_handicap = Column('平即盘', pd.Float64Dtype())
+    live_average_water2 = Column('平即水2', pd.Float64Dtype())
+    early_average_water1 = Column('平初水1', pd.Float64Dtype())
+    early_average_handicap = Column('平初盘', pd.Float64Dtype())
+    early_average_water2 = Column('平初水2', pd.Float64Dtype())
 
     def get_data(self, match_id: MatchTable.match_id.type) -> list[float]:
         return list(self.loc[match_id, self.class_columns()])

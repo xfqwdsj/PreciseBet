@@ -282,9 +282,7 @@ class HandicapTable(MatchInformationTable):
         self.update_row(match_id, self.row_from_list(handicap, updated_match_status))
 
 
-class OddTable(MatchInformationTable):
-    name_ = 'odd'
-
+class OddTable(MatchInformationTable, ABC):
     win = Column('胜', float)
     draw = Column('平', float)
     lose = Column('负', float)
@@ -295,6 +293,14 @@ class OddTable(MatchInformationTable):
             win=odds[0], draw=odds[1], lose=odds[2], updated_time=updated_time,
             updated_match_status=updated_match_status
         )
+
+
+class SpTable(OddTable):
+    name_ = 'sp'
+
+
+class AverageEuropeOddTable(OddTable):
+    name_ = 'odd'
 
 
 class NamedTable(Table, ABC):

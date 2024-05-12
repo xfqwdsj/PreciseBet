@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 from pathlib import Path
 from typing import Annotated, Optional
@@ -37,6 +37,7 @@ def generate_data(
     data_table.score.save()
     data_table.value.save()
     data_table.handicap.save()
+    data_table.sp.save()
     data_table.odd.save()
     data_table.league.save()
     data_table.team.save()

@@ -10,7 +10,10 @@ from bs4 import BeautifulSoup, Tag
 from regex import regex
 
 from precise_bet import rprint
-from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, TeamTable, ValueTable
+from precise_bet.type import (
+    AverageEuropeOddTable, DataTable, HandicapTable, LeagueTable, ScoreTable, TeamTable, ValueTable
+)
+from precise_bet.type.table import SpTable
 
 
 @dataclass
@@ -20,7 +23,8 @@ class DataSet:
     score: ScoreTable
     value: ValueTable
     handicap: HandicapTable
-    odd: OddTable
+    sp: SpTable
+    odd: AverageEuropeOddTable
     league: LeagueTable
     team: TeamTable
 
@@ -34,7 +38,8 @@ def parse_table(project_path: Path, html: str) -> DataSet:
     score = ScoreTable(project_path).read_or_create()
     value = ValueTable(project_path).read_or_create()
     handicap = HandicapTable(project_path).read_or_create()
-    odd = OddTable(project_path).read_or_create()
+    sp = SpTable(project_path).read_or_create()
+    odd = AverageEuropeOddTable(project_path).read_or_create()
     league = LeagueTable(project_path).read_or_create()
     team = TeamTable(project_path).read_or_create()
 
@@ -123,16 +128,22 @@ def parse_table(project_path: Path, html: str) -> DataSet:
     odd_dict = eval(regex.search(r'var liveOddsList = ({.*});', html).group(1))
     for match_id, odds in odd_dict.items():
         match_id = f'a{match_id}'
+        sp_list = [0.0, 0.0, 0.0]
         odd_list = [0.0, 0.0, 0.0]
+        if 'rqsp' in odds:
+            sp_list = [float(i) for i in odds['rqsp']]
         if '0' in odds:
             odd_list = [float(i) for i in odds['0']]
-        odd.loc[match_id] = OddTable.row_from_list(odd_list, updated_time, data.loc[match_id, DataTable.match_status])
+        sp.loc[match_id] = SpTable.row_from_list(sp_list, updated_time, data.loc[match_id, DataTable.match_status])
+        odd.loc[match_id] = AverageEuropeOddTable.row_from_list(
+            odd_list, updated_time, data.loc[match_id, DataTable.match_status]
+        )
 
     data.sort_values(by=[DataTable.volume_number, DataTable.match_number], inplace=True)
     league.sort_index(inplace=True)
     team.sort_index(inplace=True)
 
     return DataSet(
-        volume_number=volume_number, data=data, score=score, value=value, handicap=handicap, odd=odd, league=league,
-        team=team
+        volume_number=volume_number, data=data, score=score, value=value, handicap=handicap, sp=sp, odd=odd,
+        league=league, team=team
     )

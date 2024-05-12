@@ -13,7 +13,9 @@ from rich.prompt import Confirm
 
 from precise_bet import rprint, stdout_console
 from precise_bet.data import save_message, save_to_csv, save_to_html
-from precise_bet.type import DataTable, HandicapTable, LeagueTable, OddTable, ScoreTable, ValueTable, match_status_dict
+from precise_bet.type import (
+    AverageEuropeOddTable, DataTable, HandicapTable, LeagueTable, ScoreTable, ValueTable, match_status_dict
+)
 from precise_bet.util import can_write, mkdir
 
 red = 'color: #FF0000;'
@@ -122,7 +124,7 @@ def export(
     value = ValueTable(project_path).read()
     league = LeagueTable(project_path).read()
     handicap = HandicapTable(project_path).read()
-    odd = OddTable(project_path).read()
+    odd = AverageEuropeOddTable(project_path).read()
 
     def calculate_result(score_text: str):
         score_list = score_text.split('-')
@@ -142,7 +144,7 @@ def export(
     # '+' 为特殊运算符，表示合并，不可替换为模板字符串
     score_str = score[ScoreTable.host_score].astype(str) + ' - ' + score[ScoreTable.guest_score].astype(str)
     data.insert(data.columns.get_loc(DataTable.guest_name), '比分', score_str)
-    data[OddTable.class_columns()] = odd[OddTable.class_columns()]
+    data[AverageEuropeOddTable.class_columns()] = odd[AverageEuropeOddTable.class_columns()]
     data['结果'] = data['比分'].apply(calculate_result)
     placeholder = '-' if file_format == TextBasedFormat else ''
     data.loc[data[DataTable.match_status] != 4, ['比分', '结果']] = placeholder
@@ -262,9 +264,9 @@ def export(
             subset=[DataTable.half_score]
         )
         style.apply(lambda _: [f'{ya_hei}{result_color}{nine_point}{center}{middle}'] * length, subset=['结果'])
-        style.apply(lambda _: win_style, subset=[OddTable.win])
-        style.apply(lambda _: draw_style, subset=[OddTable.draw])
-        style.apply(lambda _: lose_style, subset=[OddTable.lose])
+        style.apply(lambda _: win_style, subset=[AverageEuropeOddTable.win])
+        style.apply(lambda _: draw_style, subset=[AverageEuropeOddTable.draw])
+        style.apply(lambda _: lose_style, subset=[AverageEuropeOddTable.lose])
         style.apply(lambda _: [f'{left}{middle}'] * length, subset=ValueTable.class_columns())
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
         if file_format == Special:
@@ -289,7 +291,7 @@ def export(
         for cell in worksheet[columns[DataTable.match_time]]:
             cell.number_format = 'yyyy/m/d h:mm'
 
-        for cells in worksheet[f'{columns[OddTable.win]}:{columns[OddTable.lose]}']:
+        for cells in worksheet[f'{columns[AverageEuropeOddTable.win]}:{columns[AverageEuropeOddTable.lose]}']:
             for cell in cells:
                 cell.number_format = '0.00'
 
@@ -316,7 +318,7 @@ def export(
             worksheet.column_dimensions[columns['全场比分']].width = 4
 
         for i in range(3):
-            worksheet.column_dimensions[chr(ord(columns[OddTable.win]) + i)].width = 6
+            worksheet.column_dimensions[chr(ord(columns[AverageEuropeOddTable.win]) + i)].width = 6
 
         for i in range(6 if file_format == Special else 8):
             worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6

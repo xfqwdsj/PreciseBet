@@ -1,4 +1,5 @@
 #  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import inspect
 import re
 from abc import ABC
@@ -15,7 +16,13 @@ from rich.prompt import Confirm
 from precise_bet import rprint, stdout_console
 from precise_bet.data import save_message, save_to_csv, save_to_html
 from precise_bet.type import (
-    AverageEuropeOddTable, DataTable, HandicapTable, LeagueTable, ScoreTable, ValueTable, match_status_dict,
+    AverageEuropeOddTable,
+    DataTable,
+    HandicapTable,
+    LeagueTable,
+    ScoreTable,
+    ValueTable,
+    match_status_dict,
 )
 from precise_bet.type.table import SpTable
 from precise_bet.util import can_write, mkdir
@@ -82,7 +89,9 @@ class ExportFileFormats(Enum):
     special = Special()
 
 
-def formats_parser(value: str) -> ExportFileFormat:
+def formats_parser(value: str | ExportFileFormat) -> ExportFileFormat:
+    if isinstance(value, ExportFileFormat):
+        return value
     try:
         return ExportFileFormats[value].value
     except KeyError:

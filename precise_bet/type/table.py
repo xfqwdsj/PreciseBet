@@ -283,9 +283,9 @@ class HandicapTable(MatchInformationTable):
 
 
 class OddTable(MatchInformationTable, ABC):
-    win = Column('胜', float)
-    draw = Column('平', float)
-    lose = Column('负', float)
+    win: Column
+    draw: Column
+    lose: Column
 
     @classmethod
     def row_from_list(cls, odds: list[float], updated_time: float, updated_match_status: int):
@@ -298,9 +298,17 @@ class OddTable(MatchInformationTable, ABC):
 class SpTable(OddTable):
     name_ = 'sp'
 
+    win = Column('SP胜', float)
+    draw = Column('SP平', float)
+    lose = Column('SP负', float)
+
 
 class AverageEuropeOddTable(OddTable):
     name_ = 'odd'
+
+    win = Column('欧赔胜', float)
+    draw = Column('欧赔平', float)
+    lose = Column('欧赔负', float)
 
 
 class NamedTable(Table, ABC):

@@ -134,7 +134,8 @@ def parse_table(project_path: Path, html: str) -> DataSet:
             sp_list = [float(i) for i in odds['rqsp']]
         if '0' in odds:
             odd_list = [float(i) for i in odds['0']]
-        sp.loc[match_id] = SpTable.row_from_list(sp_list, updated_time, data.loc[match_id, DataTable.match_status])
+        if 0 not in sp_list:
+            sp.loc[match_id] = SpTable.row_from_list(sp_list, updated_time, data.loc[match_id, DataTable.match_status])
         odd.loc[match_id] = AverageEuropeOddTable.row_from_list(
             odd_list, updated_time, data.loc[match_id, DataTable.match_status]
         )

@@ -21,16 +21,16 @@ def get_team_value(team_id: int, ua: str) -> int:
 
     rprint("正在匹配...")
 
-    match = re.search(r"球队身价：(\d+)([万|亿])欧", text)
+    match = re.search(r"球队身价：(\d+(\.\d+)?)([万|亿])欧", text)
     if match is None:
         rprint("[bold yellow]匹配失败。将该球队价值设为 0")
         return 0
 
     rprint(f"匹配到{match.group(0)}")
 
-    value = int(match.group(1))
+    value = float(match.group(1))
 
     if match.group(2) == "亿":
         value *= 10000
 
-    return value
+    return int(value)

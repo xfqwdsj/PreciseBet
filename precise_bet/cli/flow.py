@@ -22,6 +22,7 @@ def flow(
     retry_times: int = 3,
     extra_interval_probability: float = 0,
     fast_mode: bool = False,
+    export_only_current_volume: bool = True,
 ):
     """生成数据、更新数据、导出数据"""
 
@@ -100,7 +101,14 @@ def flow(
             step = 0
             error_times = 0
         finally:
-            export(ctx, file_format=ExportFileFormats.special.value)
+            export(
+                ctx,
+                file_name_suffix=(
+                    f"-{volume_number}" if export_only_current_volume else None
+                ),
+                file_format=ExportFileFormats.special.value,
+                volume_number=volume_number if export_only_current_volume else None,
+            )
 
             last = 1 <= execute_times == executed_times
 

@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 
 import pandas as pd
 import typer
@@ -103,6 +103,9 @@ def export(
     file_name: Annotated[
         str, typer.Option("--file-name", "-n", help="导出文件名")
     ] = "exported/data",
+    file_name_suffix: Annotated[
+        Optional[str], typer.Option("--file-name-suffix", "-s", help="导出文件名后缀")
+    ] = None,
     file_format: Annotated[
         ExportFileFormat,
         typer.Option(
@@ -113,10 +116,16 @@ def export(
             parser=formats_parser,
         ),
     ] = ExportFileFormats.csv.value,
+    volume_number: Annotated[
+        Optional[int], typer.Option("--volume-number", "-v", help="期号")
+    ] = None,
 ):
     """导出数据"""
 
     project_path: Path = ctx.obj["project_path"]
+
+    if file_name_suffix:
+        file_name += file_name_suffix
 
     save_path = project_path / f"{file_name}{file_format.extension}"
     mkdir(save_path.parent)
@@ -152,6 +161,10 @@ def export(
     handicap = HandicapTable(project_path).read()
     sp = SpTable(project_path).read()
     odd = AverageEuropeOddTable(project_path).read()
+
+    if volume_number:
+        rprint(f"已指定期号为 [bold]{volume_number}[/bold]")
+        data = data[data[DataTable.volume_number] == volume_number]
 
     def calculate_match_result(score_text: str):
         score_list = score_text.split("-")

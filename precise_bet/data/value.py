@@ -30,7 +30,7 @@ def get_team_value(team_id: int, ua: str) -> int:
 
     value = float(match.group(1))
 
-    if match.group(2) == "亿":
+    if match.group(3) == "亿":
         value *= 10000
 
     return int(value)

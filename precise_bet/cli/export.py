@@ -35,6 +35,7 @@ handicap_background_color = "background-color: #E1E9F0;"
 handicap_highlight_color = "background-color: #D7327D;"
 odd_background_color = "background-color: #F4B084;"
 ya_hei = "font-family: 微软雅黑;"
+# noinspection SpellCheckingInspection
 calibri = "font-family: Calibri;"
 tahoma = "font-family: Tahoma;"
 nine_point = "font-size: 9pt;"
@@ -473,15 +474,19 @@ def export(
                 )
 
         if file_format == Special:
-            index = data.index.get_loc(
-                data.index[data[DataTable.match_status] == match_status_dict[4]][-1]
-            )
+            if len(data) > 0:
+                index = data.index.get_loc(
+                    data.index[data[DataTable.match_status] == match_status_dict[4]][-1]
+                )
+            else:
+                index = 0
             active_cell = f"A{index + 3}"
             rprint(f"正在设置活动单元格：[bold]{active_cell}[/bold] ...")
             # noinspection PyPep8Naming
             worksheet.views.sheetView[0].topLeftCell = active_cell
             for selection in worksheet.views.sheetView[0].selection:
                 selection.activeCell = active_cell
+                # noinspection SpellCheckingInspection
                 selection.sqref = active_cell
 
         save_message(save_path, lambda: writer.close())

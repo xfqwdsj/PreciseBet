@@ -474,10 +474,11 @@ def export(
                 )
 
         if file_format == Special:
-            if len(data) > 0:
-                index = data.index.get_loc(
-                    data.index[data[DataTable.match_status] == match_status_dict[4]][-1]
-                )
+            finished_indexes = data.index[
+                data[DataTable.match_status] == match_status_dict[4]
+            ]
+            if len(finished_indexes) > 0:
+                index = data.index.get_loc(finished_indexes[-1])
             else:
                 index = 0
             active_cell = f"A{index + 3}"

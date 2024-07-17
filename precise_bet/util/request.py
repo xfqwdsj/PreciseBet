@@ -2,19 +2,35 @@
 
 import requests
 from fake_useragent import UserAgent
+from requests import RequestException
 
 from precise_bet import rprint
 
 
-def request_content(url, ua=UserAgent(platforms=["pc"]).random) -> str:
+def request_content(url, ua=UserAgent(platforms=["pc"]).random, trying_times=1) -> str:
     rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
-    response = requests.get(url, headers={"User-Agent": ua})
-    if not response.ok:
-        if response.status_code == 503:
-            raise RuntimeError(
-                f"请求失败，状态码：{response.status_code}，可能是因为访问频率过高导致被暂时封禁"
+    tried = False
+    while True:
+        if tried:
+            rprint(
+                f"正在重试请求，剩余尝试次数：{trying_times if trying_times > 0 else '无限'}"
             )
-        raise RuntimeError(f"请求失败，状态码：{response.status_code}")
-
-    response.encoding = "gb2312"
-    return response.text
+        tried = True
+        try:
+            response = requests.get(url, headers={"User-Agent": ua})
+            if response.ok:
+                response.encoding = "gb2312"
+                return response.text
+            else:
+                if response.status_code == 503:
+                    error_message = f"请求失败，可能是因为访问频率过高导致被暂时封禁"
+                else:
+                    error_message = f"请求失败，状态码：{response.status_code}"
+                raise RequestException(error_message)
+        except RequestException as e:
+            rprint(f"请求过程中发生错误：{e}")
+        if trying_times == 0:
+            continue
+        trying_times -= 1
+        if trying_times < 1:
+            raise RuntimeError("请求失败")

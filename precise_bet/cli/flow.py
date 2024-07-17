@@ -19,6 +19,7 @@ def flow(
     full_update: bool = True,
     execute_times: int = 1,
     flow_interval: int = 0,
+    request_trying_times: int = 1,
     retry_times: int = 3,
     extra_interval_probability: float = 0,
     fast_mode: bool = False,
@@ -58,7 +59,11 @@ def flow(
             )
 
             if step == 0:
-                generate_data(ctx, volume_number=volume_number)
+                generate_data(
+                    ctx,
+                    volume_number=volume_number,
+                    request_trying_times=request_trying_times,
+                )
                 step += 1
 
             if step == 1:
@@ -70,6 +75,7 @@ def flow(
                         extra_interval_probability=extra_interval_probability,
                         break_hours=break_hours,
                         only_new=full_update,
+                        request_trying_times=request_trying_times,
                         **additional_parameter_update,
                     )
                 step += 1
@@ -81,6 +87,7 @@ def flow(
                     volume_number=volume_number,
                     extra_interval_probability=extra_interval_probability,
                     break_hours=break_hours,
+                    request_trying_times=request_trying_times,
                     **additional_parameter_update,
                 )
         except KeyboardInterrupt:

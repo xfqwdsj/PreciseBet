@@ -73,13 +73,21 @@ class ValueAction(Action[ValueTable]):
         return self.table.loc[self.table.index.isin(indexes)]
 
     def update(
-        self, match_id: str, global_data: DataTable, team_data: TeamTable, ua: str, **_
+        self,
+        match_id: str,
+        global_data: DataTable,
+        team_data: TeamTable,
+        ua: str,
+        request_trying_times: int,
+        **_,
     ):
         before = self._table.get_data(match_id)
         after = []
         updated_time: float
         for team_id_column in [DataTable.host_id, DataTable.guest_id]:
-            value = get_team_value(global_data.loc[match_id, team_id_column], ua)
+            value = get_team_value(
+                global_data.loc[match_id, team_id_column], ua, request_trying_times
+            )
             after += [value]
             team_data.update_from_value(
                 global_data.loc[match_id, team_id_column], value
@@ -102,9 +110,16 @@ class HandicapAction(Action[HandicapTable]):
     def filter(self, indexes, **_):
         return self.table.loc[self.table.index.isin(indexes)]
 
-    def update(self, match_id: str, global_data: DataTable, ua: str, **_):
+    def update(
+        self,
+        match_id: str,
+        global_data: DataTable,
+        ua: str,
+        request_trying_times: int,
+        **_,
+    ):
         before = self._table.get_data(match_id)
-        after = get_match_handicap(match_id, ua)
+        after = get_match_handicap(match_id, ua, request_trying_times)
         self._table.update_from_list(
             match_id, after, global_data.loc[match_id, DataTable.match_status]
         )
@@ -191,6 +206,10 @@ def update(
     limit_count: Annotated[
         Optional[int], typer.Option("--limit-count", "-m", help="指定要更新多少场比赛")
     ] = None,
+    request_trying_times: Annotated[
+        int,
+        typer.Option("--request-trying-times", help="请求尝试次数（设为 0 无限尝试）"),
+    ] = 1,
 ):
     """更新数据"""
 
@@ -395,7 +414,11 @@ def update(
                 rprint(f"该场比赛为从未获取过{action.name}的比赛")
 
             before, after = action.update(
-                match_id=match_id, global_data=global_data, team_data=team_data, ua=ua
+                match_id=match_id,
+                global_data=global_data,
+                team_data=team_data,
+                ua=ua,
+                request_trying_times=request_trying_times,
             )
             before = list(map(lambda x: "无" if pd.isna(x) else x, before))
 

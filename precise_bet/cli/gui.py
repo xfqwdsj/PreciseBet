@@ -59,6 +59,11 @@ def gui(ctx: typer.Context):
     entries["flow_interval"][0].grid(row=row, column=1)
     row += 1
 
+    tk.Label(root, text="请求尝试次数（默认 1，设为 0 无限尝试）").grid(row=row)
+    entries["request_trying_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries["request_trying_times"][0].grid(row=row, column=1)
+    row += 1
+
     tk.Label(root, text="遇到错误的时候的重试次数（默认 3）").grid(row=row)
     entries["retry_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
     entries["retry_times"][0].grid(row=row, column=1)

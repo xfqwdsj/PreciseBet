@@ -8,6 +8,7 @@ from precise_bet import rprint
 
 
 def request_content(url, ua=UserAgent(platforms=["pc"]).random, trying_times=1) -> str:
+    session = requests.Session()
     rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
     tried = False
     while True:
@@ -17,7 +18,14 @@ def request_content(url, ua=UserAgent(platforms=["pc"]).random, trying_times=1) 
             )
         tried = True
         try:
-            response = requests.get(url, headers={"User-Agent": ua})
+            response = session.get(
+                url,
+                headers={
+                    "User-Agent": ua,
+                    "Accept-Encoding": "gzip, deflate",
+                    "Accept-Language": "zh-CN",
+                },
+            )
             if response.ok:
                 response.encoding = "gb2312"
                 return response.text

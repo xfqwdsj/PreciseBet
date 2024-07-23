@@ -1,4 +1,4 @@
-#  Copyright (C) 2023  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -24,22 +24,26 @@ from rich.markdown import Markdown
 from rich.prompt import Confirm
 
 from precise_bet import __version__, rprint, stdout_console
-from precise_bet.cli import export, flow, generate_data, gui, update
+from precise_bet.cli import export, flow, generate_data, gui, okooo, update
 from precise_bet.type import match_status_dict
 
-notice = f'PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)\n\n' \
-         'This program comes with ABSOLUTELY NO WARRANTY. ' \
-         'This is free software, and you are welcome to redistribute it under certain conditions.\n\n' \
-         f'You should have received a copy of the GNU General Public License along  with this program. ' \
-         f'Type `{sys.argv[0]} license\' to read.  If not, see <https://www.gnu.org/licenses/>.\n\n'
+notice = (
+    f"PreciseBet {__version__}  Copyright (C) 2023  LTFan (aka xfqwdsj)\n\n"
+    "This program comes with ABSOLUTELY NO WARRANTY. "
+    "This is free software, and you are welcome to redistribute it under certain conditions.\n\n"
+    f"You should have received a copy of the GNU General Public License along  with this program. "
+    f"Type `{sys.argv[0]} license' to read.  If not, see <https://www.gnu.org/licenses/>.\n\n"
+)
 
-cli = typer.Typer(rich_markup_mode='markdown')
+cli = typer.Typer(rich_markup_mode="markdown")
 
 
 @cli.callback()
 def cli_main(
-        ctx: typer.Context,
-        project_path: Annotated[Path, typer.Option('--project-path', '-p', help='项目路径')] = './project/'
+    ctx: typer.Context,
+    project_path: Annotated[
+        Path, typer.Option("--project-path", "-p", help="项目路径")
+    ] = "./project/",
 ):
     """
     一个用于获取 500.com 足球数据的命令行工具
@@ -77,33 +81,35 @@ def cli_main(
 
     if project_path.exists() and not project_path.is_dir():
         confirm = Confirm.ask(
-            f'项目路径 [bold]{project_path}[/bold] 已存在且不是目录，是否删除？', console=stdout_console, default=False
+            f"项目路径 [bold]{project_path}[/bold] 已存在且不是目录，是否删除？",
+            console=stdout_console,
+            default=False,
         )
 
         if not confirm:
-            rprint('已取消')
+            rprint("已取消")
             sys.exit(1)
 
         project_path.unlink()
-        rprint('已删除')
+        rprint("已删除")
 
     project_path.mkdir(exist_ok=True)
-    ctx.obj['project_path'] = project_path
+    ctx.obj["project_path"] = project_path
 
 
 @cli.command()
 def print_match_status_codes():
     """显示比赛状态列表"""
 
-    df = pd.DataFrame(match_status_dict, index=['状态']).transpose().to_markdown()
+    df = pd.DataFrame(match_status_dict, index=["状态"]).transpose().to_markdown()
     Console().print(Markdown(df))
 
 
-@cli.command('license')
+@cli.command("license")
 def show_license():
     """显示许可证信息"""
 
-    file = typer.open_file(str(Path(__file__) / '../LICENSE'), 'r')
+    file = typer.open_file(str(Path(__file__) / "../LICENSE"), "r")
     rprint(file.read())
     file.close()
 
@@ -112,7 +118,7 @@ def show_license():
 def about():
     """显示关于信息"""
 
-    rprint(f'PreciseBet [green]{__version__}', highlight=False)
+    rprint(f"PreciseBet [green]{__version__}", highlight=False)
 
 
 cli.command()(generate_data)
@@ -120,11 +126,12 @@ cli.command()(update)
 cli.command()(export)
 cli.command()(flow)
 cli.command()(gui)
+cli.command()(okooo)
 
 
 def main():
     cli()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

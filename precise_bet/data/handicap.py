@@ -15,7 +15,7 @@ def get_match_handicap(
 ) -> list[float]:
     url = "https://odds.500.com/fenxi/yazhi-" + match_id[1:] + ".shtml"
 
-    text = request_content(url, ua, request_trying_times)
+    text = request_content(url, ua=ua, trying_times=request_trying_times)
 
     soup = BeautifulSoup(text, "html.parser")
 

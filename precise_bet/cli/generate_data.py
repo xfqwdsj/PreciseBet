@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
+from requests import RequestException
 
 from precise_bet import rprint, rprint_err
 from precise_bet.data import parse_table
@@ -30,10 +31,11 @@ def generate_data(
     try:
         text = request_content(
             f"https://live.500.com/zqdc.php{f'?e={volume_number}' if volume_number else ''}",
+            encoding="gb2312",
             trying_times=request_trying_times,
         )
-    except RuntimeError as err:
-        rprint_err(err)
+    except RequestException as e:
+        rprint_err(e)
         return
 
     rprint("正在解析数据...")

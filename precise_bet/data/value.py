@@ -11,7 +11,7 @@ def get_team_value(team_id: int, ua: str, request_trying_times: int) -> int:
 
     rprint(f"正在获取代号为 [bold]{team_id}[/bold] 的球队价值信息...")
 
-    text = request_content(url, ua, request_trying_times)
+    text = request_content(url, ua=ua, trying_times=request_trying_times)
 
     name = re.search(r'<h2 class="lsnav_qdnav_name">(.+)</h2>', text)
     if name:

@@ -13,11 +13,13 @@ from requests import RequestException
 
 from precise_bet import rprint, rprint_err
 from precise_bet.cli.export import (
+    bold,
     calibri,
     center,
     middle,
     nine_point,
     odd_background_color,
+    red,
     result_color,
     ten_point,
     ya_hei,
@@ -95,18 +97,45 @@ def okooo(
             for r in data[OkoooDataTable.result]
         ]
 
+        length = len(data)
         style = data.style
+        style.apply(
+            lambda _: [f"{red}{bold}"] * length,
+            subset=[OkoooDataTable.match_number, OkoooDataTable.score],
+        )
         style.apply(lambda _: sp_win_style, subset=[OkoooDataTable.sp_win])
         style.apply(lambda _: sp_draw_style, subset=[OkoooDataTable.sp_draw])
         style.apply(lambda _: sp_lose_style, subset=[OkoooDataTable.sp_lose])
         style.apply(
-            lambda _: [f"{ya_hei}{result_color}{nine_point}{center}{middle}"]
-            * len(data),
+            lambda _: [f"{ya_hei}{result_color}{nine_point}{center}{middle}"] * length,
             subset=[OkoooDataTable.result],
         )
 
         writer = pd.ExcelWriter(save_path)
         style.to_excel(writer)
+
+        worksheet = writer.sheets["Sheet1"]
+
+        for cell in worksheet["E"]:
+            cell.number_format = "yyyy/m/d h:mm"
+
+        for cells in worksheet["I:K"]:
+            for cell in cells:
+                cell.number_format = "0.00"
+
+        worksheet.column_dimensions["A"].width = 8
+        worksheet.column_dimensions["B"].width = 6
+        worksheet.column_dimensions["C"].width = 5
+        worksheet.column_dimensions["D"].width = 10
+        worksheet.column_dimensions["E"].width = 18
+        worksheet.column_dimensions["F"].width = 20
+        worksheet.column_dimensions["G"].width = 6
+        worksheet.column_dimensions["H"].width = 20
+        worksheet.column_dimensions["I"].width = 5
+        worksheet.column_dimensions["J"].width = 5
+        worksheet.column_dimensions["K"].width = 5
+        worksheet.column_dimensions["L"].width = 5
+
         writer.close()
 
         if volume_number % 10 == 5:
@@ -160,7 +189,7 @@ def parse(project_path: Path, html: str) -> DataTable:
 
         match_time = match_time.strftime("%Y/%m/%d %H:%M")
 
-        host = tds[4].find("a").text
+        host = tds[4].find("a").text + tds[4].find_all("span")[2].text
         guest = tds[6].find("a").text
 
         score = tds[5].text.strip().replace("\n", " ")

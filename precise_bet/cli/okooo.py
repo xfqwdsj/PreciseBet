@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from time import sleep
 from typing import List
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -82,6 +83,13 @@ def okooo(
 
         save_path = project_path / "okooo" / f"{volume_number}.xlsx"
         mkdir(save_path.parent)
+
+        timezone = datetime.now().astimezone().tzinfo
+        data[OkoooDataTable.match_time] = (
+            pd.to_datetime(data[OkoooDataTable.match_time], unit="s", utc=True)
+            .dt.tz_convert(timezone)
+            .dt.tz_localize(None)
+        )
 
         odd_style = f"{calibri}{ten_point}{center}{middle}"
         sp_win_style = [
@@ -187,8 +195,6 @@ def parse(project_path: Path, html: str) -> DataTable:
         if volume_number % 100 == 11 and match_time.month == 12:
             match_time = match_time.replace(year=match_time.year - 1)
 
-        match_time = match_time.strftime("%Y/%m/%d %H:%M")
-
         host = tds[4].find("a").text + tds[4].find_all("span")[2].text
         guest = tds[6].find("a").text
 
@@ -210,7 +216,9 @@ def parse(project_path: Path, html: str) -> DataTable:
             volume_number=volume_number,
             match_number=match_number,
             league=league,
-            match_time=match_time,
+            match_time=int(
+                match_time.astimezone(ZoneInfo("Asia/Shanghai")).timestamp()
+            ),
             host_name=host,
             score=score,
             guest_name=guest,
@@ -229,7 +237,7 @@ class OkoooDataTable(MatchTable):
     volume_number = Column("期号", int)
     match_number = Column("场次", int)
     league = Column("赛事", str)
-    match_time = Column("比赛时间", str)
+    match_time = Column("比赛时间", int)
     host_name = Column("主队名称", str)
     score = Column("比分", str)
     guest_name = Column("客队名称", str)

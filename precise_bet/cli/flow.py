@@ -24,6 +24,7 @@ def flow(
     extra_interval_probability: float = 0,
     fast_mode: bool = False,
     export_only_current_volume: bool = True,
+    export_match_number_range: str = None,
 ):
     """生成数据、更新数据、导出数据"""
 
@@ -115,6 +116,7 @@ def flow(
                 ),
                 file_format=ExportFileFormats.special.value,
                 volume_number=volume_number if export_only_current_volume else None,
+                match_number_range=export_match_number_range,
             )
 
             last = 1 <= execute_times == executed_times

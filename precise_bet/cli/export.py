@@ -121,6 +121,10 @@ def export(
     volume_number: Annotated[
         Optional[int], typer.Option("--volume-number", "-v", help="期号")
     ] = None,
+    match_number_range: Annotated[
+        Optional[str],
+        typer.Option("--match-number-range", "-r", help="场次范围（如 1-3）"),
+    ] = None,
 ):
     """导出数据"""
 
@@ -167,6 +171,14 @@ def export(
     if volume_number:
         rprint(f"已指定期号为 [bold]{volume_number}[/bold]")
         data = data[data[DataTable.volume_number] == volume_number]
+
+    if volume_number and match_number_range:
+        start, end = map(int, match_number_range.split("-"))
+        rprint(f"已指定场次范围为 [bold]{start}[/bold] 至 [bold]{end}[/bold]")
+        data = data[
+            (data[DataTable.match_number] >= start)
+            & (data[DataTable.match_number] <= end)
+        ]
 
     def calculate_match_result(score_text: str):
         score_list = score_text.split("-")

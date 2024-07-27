@@ -95,6 +95,13 @@ def gui(ctx: typer.Context):
     entries["export_only_current_volume"][0].grid(row=row, column=1)
     row += 1
 
+    tk.Label(
+        root, text="导出场次范围（默认全部，需要开启“只导出当前期”，格式如1-3）"
+    ).grid(row=row)
+    entries["export_match_number_range"] = (tk.Entry(root), lambda entry: entry.get())
+    entries["export_match_number_range"][0].grid(row=row, column=1)
+    row += 1
+
     def run_flow():
         project_path = entries["project_path"][0].get()
         if project_path:

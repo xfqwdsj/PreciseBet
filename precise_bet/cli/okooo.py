@@ -84,6 +84,10 @@ def okooo(
         save_path = project_path / "okooo" / f"{volume_number}.xlsx"
         mkdir(save_path.parent)
 
+        data[OkoooDataTable.match_number] = (
+            data[OkoooDataTable.match_number].astype(str).str.zfill(3)
+        )
+
         timezone = datetime.now().astimezone().tzinfo
         data[OkoooDataTable.match_time] = (
             pd.to_datetime(data[OkoooDataTable.match_time], unit="s", utc=True)

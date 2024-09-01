@@ -32,7 +32,6 @@ handicapped_point_color = "color: #2F75B5;"
 half_score_color = "color: #00B050;"
 result_color = "color: #FF8080;"
 handicap_background_color = "background-color: #E1E9F0;"
-handicap_highlight_color = "background-color: #D7327D;"
 odd_background_color = "background-color: #F4B084;"
 ya_hei = "font-family: 微软雅黑;"
 # noinspection SpellCheckingInspection
@@ -236,9 +235,6 @@ def export(
     data[HandicapTable.class_columns()[:3]] = handicap[
         HandicapTable.class_columns()[:3]
     ]
-    if file_format == Special:
-        data["空列1"] = ""
-        data["空列2"] = ""
     data[HandicapTable.class_columns()[3:]] = handicap[
         HandicapTable.class_columns()[3:]
     ]
@@ -310,26 +306,19 @@ def export(
             append_team_style(guest, guest_style)
 
         handicap_style = []
-        if file_format == Special:
-            empty_column_style = []
         for match_id in data.index:
             color = ""
-            if data.loc[match_id, HandicapTable.live_average_handicap] > 0:
-                color = handicap_highlight_color
+            if data.loc[match_id, HandicapTable.live_average_handicap] < 0:
+                color = handicap_background_color
             elif data.loc[match_id, HandicapTable.live_average_handicap] == 0:
-                if data.loc[match_id, HandicapTable.early_average_handicap] > 0:
-                    color = handicap_highlight_color
+                if data.loc[match_id, HandicapTable.early_average_handicap] < 0:
+                    color = handicap_background_color
                 elif data.loc[match_id, HandicapTable.early_average_handicap] == 0:
                     if (
                         data.loc[match_id, ValueTable.guest_value]
-                        > data.loc[match_id, ValueTable.host_value]
+                        <= data.loc[match_id, ValueTable.host_value]
                     ):
-                        color = handicap_highlight_color
-            if file_format == Special:
-                # noinspection PyUnboundLocalVariable
-                empty_column_style.append(color)
-            if color == "":
-                color = handicap_background_color
+                        color = handicap_background_color
             handicap_style.append(f"{color}{tahoma}{nine_point}{center}{middle}")
 
         odd_style = f"{calibri}{ten_point}{center}{middle}"
@@ -410,7 +399,6 @@ def export(
             style.data[DataTable.match_number] = (
                 style.data[DataTable.match_number].astype(str).str.zfill(3)
             )
-            style.apply(lambda _: empty_column_style, subset=["空列1", "空列2"])
 
         if file_format == Html:
             save_to_html(style, project_path, file_name, file_format.extension)
@@ -479,12 +467,6 @@ def export(
 
         for i in range(6 if file_format == Special else 8):
             worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6
-
-        if file_format == Special:
-            for i in range(2):
-                worksheet.column_dimensions[chr(ord(columns["空列1"]) + i)].width = (
-                    0.001
-                )
 
         if file_format == Special:
             finished_indexes = data.index[

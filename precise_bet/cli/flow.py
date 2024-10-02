@@ -1,6 +1,7 @@
 #  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
-
+import asyncio
 import traceback
+from datetime import datetime
 
 import typer
 
@@ -20,6 +21,7 @@ def flow(
     update_handicap: bool = True,
     execute_times: int = 1,
     flow_interval: int = 0,
+    terminate_time: int = None,
     request_trying_times: int = 1,
     retry_times: int = 3,
     interval: int = 5,
@@ -50,8 +52,16 @@ def flow(
     step = 0
     error_times = 0
 
+    start_time = datetime.now()
+
     while execute_times < 1 or executed_times < execute_times:
         terminate = False
+
+        def should_terminate():
+            if terminate_time:
+                if (datetime.now() - start_time).seconds >= terminate_time:
+                    return True
+            return False
 
         try:
             retry_indicator = "[bold]从中断处继续[/bold]" if step > 0 else ""
@@ -69,6 +79,8 @@ def flow(
                     volume_number=volume_number,
                     request_trying_times=request_trying_times,
                 )
+                if should_terminate():
+                    raise KeyboardInterrupt
                 step += 1
 
             if step == 1:
@@ -86,6 +98,8 @@ def flow(
                         request_trying_times=request_trying_times,
                         **additional_parameter_update,
                     )
+                    if should_terminate():
+                        raise KeyboardInterrupt
                 step += 1
 
             if step == 2:
@@ -102,6 +116,8 @@ def flow(
                         request_trying_times=request_trying_times,
                         **additional_parameter_update,
                     )
+                    if should_terminate():
+                        raise KeyboardInterrupt
         except KeyboardInterrupt:
             terminate = True
             rule(

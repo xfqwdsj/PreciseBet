@@ -29,6 +29,11 @@ def generate_data(
 
     rprint("正在获取数据...")
 
+    try:
+        request_content("https://www.500.com/", session)
+    except RequestException:
+        rprint_err("连接错误，正在重试")
+
     text: str
     try:
         text = request_content(

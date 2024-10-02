@@ -68,6 +68,14 @@ def gui(ctx: typer.Context):
     entries["flow_interval"][0].grid(row=row, column=1)
     row += 1
 
+    tk.Label(
+        root,
+        text="在指定时间后终止程序（秒，默认不终止，仅在流程中的一个步骤结束之后才会终止）",
+    ).grid(row=row)
+    entries["terminate_time"] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries["terminate_time"][0].grid(row=row, column=1)
+    row += 1
+
     tk.Label(root, text="所有网络请求尝试次数（默认 1，设为 0 无限尝试）").grid(row=row)
     entries["request_trying_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
     entries["request_trying_times"][0].grid(row=row, column=1)

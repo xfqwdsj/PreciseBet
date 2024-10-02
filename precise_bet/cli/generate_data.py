@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Annotated, Optional
 
+import requests
 import typer
 from requests import RequestException
 
@@ -24,6 +25,7 @@ def generate_data(
     """生成数据"""
 
     project_path: Path = ctx.obj["project_path"]
+    session: requests.Session = ctx.obj["session"]
 
     rprint("正在获取数据...")
 
@@ -31,6 +33,7 @@ def generate_data(
     try:
         text = request_content(
             f"https://live.500.com/zqdc.php{f'?e={volume_number}' if volume_number else ''}",
+            session,
             encoding="gb2312",
             trying_times=request_trying_times,
         )

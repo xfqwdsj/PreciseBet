@@ -1,5 +1,5 @@
 #  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
-
+import requests
 from bs4 import BeautifulSoup, Tag
 
 from precise_bet.util import request_content
@@ -11,11 +11,11 @@ def parse(td: Tag) -> list[float]:
 
 
 def get_match_handicap(
-    match_id: str, ua: str, request_trying_times: int
+    match_id: str, session: requests.Session, ua: str, request_trying_times: int
 ) -> list[float]:
     url = "https://odds.500.com/fenxi/yazhi-" + match_id[1:] + ".shtml"
 
-    text = request_content(url, ua=ua, trying_times=request_trying_times)
+    text = request_content(url, session, ua=ua, trying_times=request_trying_times)
 
     soup = BeautifulSoup(text, "html.parser")
 

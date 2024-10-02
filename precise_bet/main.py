@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Annotated
 
 import pandas as pd
+import requests
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
@@ -95,6 +96,7 @@ def cli_main(
 
     project_path.mkdir(exist_ok=True)
     ctx.obj["project_path"] = project_path
+    ctx.obj["session"] = requests.Session()
 
 
 @cli.command()

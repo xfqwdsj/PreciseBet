@@ -9,14 +9,11 @@ from precise_bet import rprint
 
 def request_content(
     url,
-    session: requests.Session = None,
+    session: requests.Session,
     ua=UserAgent(platforms=["pc"]).random,
     encoding: str = None,
     trying_times=1,
 ) -> str:
-    if not session:
-        session = requests.Session()
-
     rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
     tried = False
     while True:

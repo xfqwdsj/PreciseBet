@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Annotated, Any, Generic, Optional, Tuple, TypeVar
 
 import pandas as pd
+import requests
 import typer
 from fake_useragent import UserAgent
 from rich.console import Console
@@ -77,6 +78,7 @@ class ValueAction(Action[ValueTable]):
         match_id: str,
         global_data: DataTable,
         team_data: TeamTable,
+        session: requests.Session,
         ua: str,
         request_trying_times: int,
         **_,
@@ -86,7 +88,10 @@ class ValueAction(Action[ValueTable]):
         updated_time: float
         for team_id_column in [DataTable.host_id, DataTable.guest_id]:
             value = get_team_value(
-                global_data.loc[match_id, team_id_column], ua, request_trying_times
+                global_data.loc[match_id, team_id_column],
+                session,
+                ua,
+                request_trying_times,
             )
             after += [value]
             team_data.update_from_value(
@@ -114,12 +119,13 @@ class HandicapAction(Action[HandicapTable]):
         self,
         match_id: str,
         global_data: DataTable,
+        session: requests.Session,
         ua: str,
         request_trying_times: int,
         **_,
     ):
         before = self._table.get_data(match_id)
-        after = get_match_handicap(match_id, ua, request_trying_times)
+        after = get_match_handicap(match_id, session, ua, request_trying_times)
         self._table.update_from_list(
             match_id, after, global_data.loc[match_id, DataTable.match_status]
         )
@@ -214,6 +220,7 @@ def update(
     """更新数据"""
 
     project_path: Path = ctx.obj["project_path"]
+    session: requests.Session = ctx.obj["session"]
 
     global_data = DataTable(project_path).read()
     team_data = TeamTable(project_path).read()
@@ -417,6 +424,7 @@ def update(
                 match_id=match_id,
                 global_data=global_data,
                 team_data=team_data,
+                session=session,
                 ua=ua,
                 request_trying_times=request_trying_times,
             )

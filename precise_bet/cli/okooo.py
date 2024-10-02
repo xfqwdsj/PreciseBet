@@ -35,6 +35,7 @@ def okooo(
     """获取澳客数据"""
 
     project_path: Path = ctx.obj["project_path"]
+    session: requests.Session = ctx.obj["session"]
 
     start_volume_number: int = typer.prompt("请输入起始期号", type=int)
     end_volume_number: int = typer.prompt("请输入结束期号", type=int)
@@ -42,12 +43,10 @@ def okooo(
 
     rprint("正在获取数据...")
 
-    session = requests.Session()
-
     rprint("第一次请求是为了模拟正常访问，可能会出现 405 错误")
 
     try:
-        request_content("https://www.okooo.com/livecenter/danchang", session=session)
+        request_content("https://www.okooo.com/livecenter/danchang", session)
     except RequestException as e:
         if e.response.status_code != 405:
             rprint_err(e)
@@ -66,7 +65,7 @@ def okooo(
         try:
             text = request_content(
                 f"https://www.okooo.com/livecenter/danchang{f'?date={volume_number}' if volume_number else ''}",
-                session=session,
+                session,
                 encoding="gb2312",
             )
         except RequestException as e:

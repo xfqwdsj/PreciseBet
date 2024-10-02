@@ -17,11 +17,15 @@ def flow(
     break_hours: int = 6,
     update_value: bool = True,
     only_new_value: bool = True,
+    update_handicap: bool = True,
     execute_times: int = 1,
     flow_interval: int = 0,
     request_trying_times: int = 1,
     retry_times: int = 3,
+    interval: int = 5,
+    extra_interval: int = 60,
     extra_interval_probability: float = 0,
+    interval_offset_range: int = 2,
     fast_mode: bool = False,
     export_only_current_volume: bool = True,
     export_match_number_range: str = None,
@@ -73,7 +77,10 @@ def flow(
                         ctx,
                         action=UpdateActions.value_action.value,
                         volume_number=volume_number,
+                        interval=interval,
+                        extra_interval=extra_interval,
                         extra_interval_probability=extra_interval_probability,
+                        interval_offset_range=interval_offset_range,
                         break_hours=break_hours,
                         only_new=only_new_value,
                         request_trying_times=request_trying_times,
@@ -82,15 +89,19 @@ def flow(
                 step += 1
 
             if step == 2:
-                update(
-                    ctx,
-                    action=UpdateActions.handicap_action.value,
-                    volume_number=volume_number,
-                    extra_interval_probability=extra_interval_probability,
-                    break_hours=break_hours,
-                    request_trying_times=request_trying_times,
-                    **additional_parameter_update,
-                )
+                if update_handicap:
+                    update(
+                        ctx,
+                        action=UpdateActions.handicap_action.value,
+                        volume_number=volume_number,
+                        interval=interval,
+                        extra_interval=extra_interval,
+                        extra_interval_probability=extra_interval_probability,
+                        interval_offset_range=interval_offset_range,
+                        break_hours=break_hours,
+                        request_trying_times=request_trying_times,
+                        **additional_parameter_update,
+                    )
         except KeyboardInterrupt:
             terminate = True
             rule(

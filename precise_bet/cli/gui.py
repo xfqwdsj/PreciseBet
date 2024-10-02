@@ -49,6 +49,15 @@ def gui(ctx: typer.Context):
     entries["only_new_value"][0].grid(row=row, column=1)
     row += 1
 
+    tk.Label(root, text="更新盘口（总开关）").grid(row=row)
+    update_handicap = tk.BooleanVar(value=True)
+    entries["update_handicap"] = (
+        tk.Checkbutton(root, variable=update_handicap),
+        lambda _: update_handicap.get(),
+    )
+    entries["update_handicap"][0].grid(row=row, column=1)
+    row += 1
+
     tk.Label(root, text="循环执行次数（默认 1，0 为无限循环）").grid(row=row)
     entries["execute_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
     entries["execute_times"][0].grid(row=row, column=1)
@@ -59,17 +68,29 @@ def gui(ctx: typer.Context):
     entries["flow_interval"][0].grid(row=row, column=1)
     row += 1
 
-    tk.Label(root, text="请求尝试次数（默认 1，设为 0 无限尝试）").grid(row=row)
+    tk.Label(root, text="所有网络请求尝试次数（默认 1，设为 0 无限尝试）").grid(row=row)
     entries["request_trying_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
     entries["request_trying_times"][0].grid(row=row, column=1)
     row += 1
 
-    tk.Label(root, text="遇到错误的时候的重试次数（默认 3）").grid(row=row)
+    tk.Label(root, text="整个流程遇到意外错误的时候的重试次数（默认 3）").grid(row=row)
     entries["retry_times"] = (tk.Entry(root), lambda entry: int(entry.get()))
     entries["retry_times"][0].grid(row=row, column=1)
     row += 1
 
-    tk.Label(root, text="额外间隔概率（默认 0）").grid(row=row)
+    tk.Label(root, text="普通更新间隔时间（秒，默认 5）").grid(row=row)
+    entries["interval"] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries["interval"][0].grid(row=row, column=1)
+    row += 1
+
+    tk.Label(root, text="额外更新间隔时间（秒，默认 60）").grid(row=row)
+    entries["extra_interval"] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries["extra_interval"][0].grid(row=row, column=1)
+    row += 1
+
+    tk.Label(
+        root, text="额外间隔概率（随机以额外更新间隔时间暂停程序的概率，默认 0）"
+    ).grid(row=row)
     entries["extra_interval_probability"] = (
         tk.Entry(root),
         lambda entry: float(entry.get()),
@@ -77,7 +98,14 @@ def gui(ctx: typer.Context):
     entries["extra_interval_probability"][0].grid(row=row, column=1)
     row += 1
 
-    tk.Label(root, text="快速模式").grid(row=row)
+    tk.Label(
+        root, text="间隔时间偏移量范围（默认 2 则在 ±2 范围内随机调整间隔时间）"
+    ).grid(row=row)
+    entries["interval_offset_range"] = (tk.Entry(root), lambda entry: int(entry.get()))
+    entries["interval_offset_range"][0].grid(row=row, column=1)
+    row += 1
+
+    tk.Label(root, text="快速模式（将间隔时间和额外间隔概率设为 0）").grid(row=row)
     fast_mode = tk.BooleanVar(value=False)
     entries["fast_mode"] = (
         tk.Checkbutton(root, variable=fast_mode),
@@ -96,7 +124,7 @@ def gui(ctx: typer.Context):
     row += 1
 
     tk.Label(
-        root, text="导出场次范围（默认全部，需要开启“只导出当前期”，格式如1-3）"
+        root, text="导出场次范围（默认全部，需要开启“只导出当前期”，格式如 1-3）"
     ).grid(row=row)
     entries["export_match_number_range"] = (tk.Entry(root), lambda entry: entry.get())
     entries["export_match_number_range"][0].grid(row=row, column=1)

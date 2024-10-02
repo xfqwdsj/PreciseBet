@@ -16,7 +16,7 @@ def flow(
     volume_number: int,
     break_hours: int = 6,
     update_value: bool = True,
-    full_update: bool = True,
+    only_new_value: bool = True,
     execute_times: int = 1,
     flow_interval: int = 0,
     request_trying_times: int = 1,
@@ -75,7 +75,7 @@ def flow(
                         volume_number=volume_number,
                         extra_interval_probability=extra_interval_probability,
                         break_hours=break_hours,
-                        only_new=full_update,
+                        only_new=only_new_value,
                         request_trying_times=request_trying_times,
                         **additional_parameter_update,
                     )

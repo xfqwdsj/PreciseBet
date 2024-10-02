@@ -41,12 +41,12 @@ def gui(ctx: typer.Context):
     row += 1
 
     tk.Label(root, text="只获取未获取过的比赛的球队价值").grid(row=row)
-    full_update = tk.BooleanVar(value=True)
-    entries["full_update"] = (
-        tk.Checkbutton(root, variable=full_update),
-        lambda _: full_update.get(),
+    only_new_value = tk.BooleanVar(value=True)
+    entries["only_new_value"] = (
+        tk.Checkbutton(root, variable=only_new_value),
+        lambda _: only_new_value.get(),
     )
-    entries["full_update"][0].grid(row=row, column=1)
+    entries["only_new_value"][0].grid(row=row, column=1)
     row += 1
 
     tk.Label(root, text="循环执行次数（默认 1，0 为无限循环）").grid(row=row)

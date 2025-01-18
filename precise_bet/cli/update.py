@@ -1,4 +1,4 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import random
 from abc import ABC, abstractmethod
@@ -24,12 +24,18 @@ from rich.progress import (
 )
 
 from precise_bet import rprint, rule, stdout_console
-from precise_bet.data import get_match_handicap, get_team_value, save_to_csv
+from precise_bet.data import (
+    get_match_handicap,
+    get_match_recent_results,
+    get_team_value,
+    save_to_csv,
+)
 from precise_bet.type import (
     DataTable,
     HandicapTable,
     MatchInformationTable,
     ProjectTable,
+    RecentResultsTable,
     TeamTable,
     UpdatableTable,
     ValueTable,
@@ -136,9 +142,38 @@ class HandicapAction(Action[HandicapTable]):
         super().__init__("亚盘")
 
 
+class RecentResultsAction(Action[RecentResultsTable]):
+    def assign(self, project_path: Path, **_):
+        self._table = RecentResultsTable(project_path).read()
+
+    def filter(self, indexes, **_):
+        return self.table.loc[self.table.index.isin(indexes)]
+
+    def update(
+        self,
+        match_id: str,
+        global_data: DataTable,
+        session: requests.Session,
+        ua: str,
+        request_trying_times: int,
+        **_,
+    ):
+        before = self._table.get_data(match_id)
+        after = get_match_recent_results(match_id, session, ua, request_trying_times)
+        self._table.update_from_list(
+            match_id, after, global_data.loc[match_id, DataTable.match_status]
+        )
+        self._table.save()
+        return before, after
+
+    def __init__(self):
+        super().__init__("近期战绩")
+
+
 class Actions(Enum):
     value_action = ValueAction()
     handicap_action = HandicapAction()
+    recent_results_action = RecentResultsAction()
 
 
 def actions_parser(value: str) -> Action:
@@ -353,7 +388,7 @@ def update(
 
     rprint(f"开始更新{action.name}信息...")
 
-    ua = UserAgent(platforms=["pc"]).random
+    ua = UserAgent(platforms=["desktop"]).random
 
     interval_list: list[Interval] = []
     extra_interval_count = 0
@@ -452,7 +487,7 @@ def update(
             interval_list.pop(0)
 
             if random_ua:
-                ua = UserAgent(platforms=["pc"]).random
+                ua = UserAgent(platforms=["desktop"]).random
 
     used_time = datetime.now() - start_time
     rprint(f"更新完成，用时 {used_time}")

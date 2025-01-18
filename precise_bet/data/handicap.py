@@ -1,4 +1,5 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import requests
 from bs4 import BeautifulSoup, Tag
 

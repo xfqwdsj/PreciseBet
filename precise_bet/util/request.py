@@ -1,4 +1,6 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
+from typing import Callable
 
 import requests
 from fake_useragent import UserAgent
@@ -7,14 +9,11 @@ from requests import RequestException
 from precise_bet import rprint
 
 
-def request_content(
-    url,
-    session: requests.Session,
-    ua=UserAgent(platforms=["pc"]).random,
+def request_base(
+    func: Callable[[], requests.Response],
     encoding: str = None,
     trying_times=1,
 ) -> str:
-    rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
     tried = False
     while True:
         if tried:
@@ -23,7 +22,7 @@ def request_content(
             )
         tried = True
         try:
-            response = session.get(url, headers={"User-Agent": ua})
+            response = func()
             if response.ok:
                 if encoding:
                     response.encoding = encoding
@@ -41,3 +40,34 @@ def request_content(
             trying_times -= 1
             if trying_times < 1:
                 raise e
+
+
+def request_content(
+    url,
+    session: requests.Session,
+    ua=UserAgent(platforms=["desktop"]).random,
+    encoding: str = None,
+    trying_times=1,
+) -> str:
+    rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
+    return request_base(
+        lambda: session.get(url, headers={"User-Agent": ua}),
+        encoding=encoding,
+        trying_times=trying_times,
+    )
+
+
+def post_request_content(
+    url,
+    data: dict,
+    session: requests.Session,
+    ua=UserAgent(platforms=["desktop"]).random,
+    encoding: str = None,
+    trying_times=1,
+) -> str:
+    rprint(f"正在向 {url} 发送请求（UA：{ua}）...")
+    return request_base(
+        lambda: session.post(url, data, headers={"User-Agent": ua}),
+        encoding=encoding,
+        trying_times=trying_times,
+    )

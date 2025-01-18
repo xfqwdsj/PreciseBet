@@ -1,4 +1,4 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import inspect
 import re
@@ -20,6 +20,7 @@ from precise_bet.type import (
     DataTable,
     HandicapTable,
     LeagueTable,
+    RecentResultsTable,
     ScoreTable,
     ValueTable,
     match_status_dict,
@@ -164,6 +165,7 @@ def export(
     value = ValueTable(project_path).read()
     league = LeagueTable(project_path).read()
     handicap = HandicapTable(project_path).read()
+    recent_results = RecentResultsTable(project_path).read()
     sp = SpTable(project_path).read()
     odd = AverageEuropeOddTable(project_path).read()
 

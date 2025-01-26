@@ -118,6 +118,7 @@ def flow(
                     )
                     if should_terminate():
                         raise KeyboardInterrupt
+                step += 1
 
             if step == 3:
                 if update_recent_results:

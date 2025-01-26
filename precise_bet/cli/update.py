@@ -277,10 +277,13 @@ def update(
     def init_status_list(string: str):
         string = string.strip()
         if string.startswith("e"):
-            exclude_list = [int(s.strip()) for s in string[1:].split(",")]
+            string = string[1:]
+            split = string.split(",") if string else []
+            exclude_list = [int(s.strip()) for s in split] if split else []
             result = list(set(match_status_dict.keys()) - set(exclude_list))
         else:
-            result = [int(s.strip()) for s in string.split(",")]
+            split = string.split(",") if string else []
+            result = [int(s.strip()) for s in split] if split else []
         result.sort()
         return result
 

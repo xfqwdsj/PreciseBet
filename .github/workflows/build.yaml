@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           poetry source remove mirrors
-          poetry lock --no-update
+          poetry lock
           poetry self add "poetry-dynamic-versioning[plugin]"
           poetry install
 

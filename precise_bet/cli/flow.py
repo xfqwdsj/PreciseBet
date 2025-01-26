@@ -1,4 +1,5 @@
 #  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+
 import traceback
 from datetime import datetime
 
@@ -37,9 +38,9 @@ def flow(
     additional_parameter_update = {}
 
     if fast_mode:
+        interval = 0
         extra_interval_probability = 0
-        additional_parameter_update["interval"] = 0
-        additional_parameter_update["interval_offset_range"] = 0
+        interval_offset_range = 0
         rprint(
             "[bold yellow]已开启快速模式，请谨慎使用。如发现数据量过大，请立即按下 Ctrl + C 中断并使用默认模式继续更新"
         )

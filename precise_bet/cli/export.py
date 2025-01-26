@@ -207,6 +207,27 @@ def export(
         else:
             return "负"
 
+    def calculate_recent_result(result_type: int):
+        return recent_results.apply(
+            lambda row: "".join(
+                [
+                    (
+                        "A"
+                        if row[col] == "win"
+                        else (
+                            "B"
+                            if row[col] == "draw"
+                            else "C" if row[col] == "lose" else "-"
+                        )
+                    )
+                    for col in RecentResultsTable.class_columns()[
+                        result_type * 3 : result_type * 3 + 3
+                    ]
+                ]
+            ),
+            axis=1,
+        )
+
     rprint(f"正在整合数据{'并添加样式' if file_format == StyledFormat else ''}...")
 
     if file_format != Special:
@@ -231,6 +252,15 @@ def export(
         placeholder
     )
     data[ValueTable.class_columns()] = value[ValueTable.class_columns()]
+    if file_format == Special:
+        data["主队近况"] = calculate_recent_result(0)
+        data["客队近况"] = calculate_recent_result(1)
+        data["主队近况（主）"] = calculate_recent_result(2)
+        data["客队近况（客）"] = calculate_recent_result(3)
+    else:
+        data[RecentResultsTable.class_columns()] = recent_results[
+            RecentResultsTable.class_columns()
+        ]
     if file_format != Special:
         # noinspection PyUnboundLocalVariable
         data[DataTable.handicap_name] = handicap_name
@@ -395,6 +425,10 @@ def export(
         style.apply(lambda _: handicap_style, subset=HandicapTable.class_columns())
         if file_format == Special:
             style.apply(
+                lambda _: [f"{center}{middle}"] * length,
+                subset=["主队近况", "客队近况", "主队近况（主）", "客队近况（客）"],
+            )
+            style.apply(
                 lambda _: [f"{calibri}{red}{ten_point}{center}{middle}"] * length,
                 subset=["全场比分"],
             )
@@ -468,6 +502,14 @@ def export(
             worksheet.column_dimensions[
                 calculate_column_name(calculate_column_index(columns[SpTable.win]) + i)
             ].width = 6
+
+        if file_format == Special:
+            for i in range(4):
+                worksheet.column_dimensions[
+                    calculate_column_name(
+                        calculate_column_index(columns["主队近况"]) + i
+                    )
+                ].width = 4
 
         for i in range(3):
             worksheet.column_dimensions[

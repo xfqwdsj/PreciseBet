@@ -129,6 +129,8 @@ def flow(
                         extra_interval=extra_interval,
                         extra_interval_probability=extra_interval_probability,
                         interval_offset_range=interval_offset_range,
+                        last_updated_status="e",
+                        status="e",
                         break_hours=break_hours,
                         only_new=True,
                         request_trying_times=request_trying_times,

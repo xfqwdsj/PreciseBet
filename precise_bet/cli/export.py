@@ -413,6 +413,11 @@ def export(
                 return chr(ord("A") + index)
             return calculate_column_name(index // 26 - 1) + chr(ord("A") + index % 26)
 
+        def calculate_column_index(name: str):
+            if len(name) == 1:
+                return ord(name) - ord("A")
+            return calculate_column_index(name[:-1]) * 26 + ord(name[-1]) - ord("A")
+
         columns = {
             column: calculate_column_name(index + 1)
             for index, column in enumerate(style.data.columns.values)
@@ -460,15 +465,21 @@ def export(
             worksheet.column_dimensions[columns["全场比分"]].width = 4
 
         for i in range(3):
-            worksheet.column_dimensions[chr(ord(columns[SpTable.win]) + i)].width = 6
+            worksheet.column_dimensions[
+                calculate_column_name(calculate_column_index(columns[SpTable.win]) + i)
+            ].width = 6
 
         for i in range(3):
             worksheet.column_dimensions[
-                chr(ord(columns[AverageEuropeOddTable.win]) + i)
+                calculate_column_name(
+                    calculate_column_index(columns[AverageEuropeOddTable.win]) + i
+                )
             ].width = 6
 
         for i in range(6 if file_format == Special else 8):
-            worksheet.column_dimensions[chr(ord(handicap_start) + i)].width = 6
+            worksheet.column_dimensions[
+                calculate_column_name(calculate_column_index(handicap_start) + i)
+            ].width = 6
 
         if file_format == Special:
             finished_indexes = data.index[

@@ -1,4 +1,4 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 
 import tkinter as tk
 from pathlib import Path
@@ -56,6 +56,15 @@ def gui(ctx: typer.Context):
         lambda _: update_handicap.get(),
     )
     entries["update_handicap"][0].grid(row=row, column=1)
+    row += 1
+
+    tk.Label(root, text="更新最近比赛结果（总开关）").grid(row=row)
+    update_recent_results = tk.BooleanVar(value=True)
+    entries["update_recent_results"] = (
+        tk.Checkbutton(root, variable=update_recent_results),
+        lambda _: update_recent_results.get(),
+    )
+    entries["update_recent_results"][0].grid(row=row, column=1)
     row += 1
 
     tk.Label(root, text="循环执行次数（默认 1，0 为无限循环）").grid(row=row)

@@ -335,18 +335,20 @@ class HandicapTable(MatchInformationTable):
 class RecentResultsTable(MatchInformationTable):
     name_ = "recent_results"
 
-    host_win_all = Column("主队近3场胜", pd.UInt32Dtype())
-    host_draw_all = Column("主队近3场平", pd.UInt32Dtype())
-    host_lose_all = Column("主队近3场负", pd.UInt32Dtype())
-    guest_win_all = Column("客队近3场胜", pd.UInt32Dtype())
-    guest_draw_all = Column("客队近3场平", pd.UInt32Dtype())
-    guest_lose_all = Column("客队近3场负", pd.UInt32Dtype())
-    host_win_home = Column("主队近3场主胜", pd.UInt32Dtype())
-    host_draw_home = Column("主队近3场主平", pd.UInt32Dtype())
-    host_lose_home = Column("主队近3场主负", pd.UInt32Dtype())
-    guest_win_away = Column("客队近3场客胜", pd.UInt32Dtype())
-    guest_draw_away = Column("客队近3场客平", pd.UInt32Dtype())
-    guest_lose_away = Column("客队近3场客负", pd.UInt32Dtype())
+    _dtype = pd.CategoricalDtype(categories=["win", "draw", "lose", "unknown"])
+
+    host_all_match_1 = Column("主队近期第1场", _dtype)
+    host_all_match_2 = Column("主队近期第2场", _dtype)
+    host_all_match_3 = Column("主队近期第3场", _dtype)
+    guest_all_match_1 = Column("客队近期第1场", _dtype)
+    guest_all_match_2 = Column("客队近期第2场", _dtype)
+    guest_all_match_3 = Column("客队近期第3场", _dtype)
+    host_home_match_1 = Column("主队近期主场第1场", _dtype)
+    host_home_match_2 = Column("主队近期主场第2场", _dtype)
+    host_home_match_3 = Column("主队近期主场第3场", _dtype)
+    guest_away_match_1 = Column("客队近期客场第1场", _dtype)
+    guest_away_match_2 = Column("客队近期客场第2场", _dtype)
+    guest_away_match_3 = Column("客队近期客场第3场", _dtype)
 
     def get_data(self, match_id: MatchTable.match_id.type) -> list[int]:
         return list(self.loc[match_id, self.class_columns()])
@@ -354,44 +356,44 @@ class RecentResultsTable(MatchInformationTable):
     @classmethod
     def empty_row(cls):
         return cls.generate_row(
-            host_win_all=None,
-            host_draw_all=None,
-            host_lose_all=None,
-            guest_win_all=None,
-            guest_draw_all=None,
-            guest_lose_all=None,
-            host_win_home=None,
-            host_draw_home=None,
-            host_lose_home=None,
-            guest_win_away=None,
-            guest_draw_away=None,
-            guest_lose_away=None,
+            host_all_match_1="unknown",
+            host_all_match_2="unknown",
+            host_all_match_3="unknown",
+            guest_all_match_1="unknown",
+            guest_all_match_2="unknown",
+            guest_all_match_3="unknown",
+            host_home_match_1="unknown",
+            host_home_match_2="unknown",
+            host_home_match_3="unknown",
+            guest_away_match_1="unknown",
+            guest_away_match_2="unknown",
+            guest_away_match_3="unknown",
             updated_time=-1.0,
             updated_match_status=-1,
         )
 
     @classmethod
-    def row_from_list(cls, results: list[int], updated_match_status: int):
+    def row_from_list(cls, results: list[str], updated_match_status: int):
         return cls.generate_row(
-            host_win_all=results[0],
-            host_draw_all=results[1],
-            host_lose_all=results[2],
-            guest_win_all=results[3],
-            guest_draw_all=results[4],
-            guest_lose_all=results[5],
-            host_win_home=results[6],
-            host_draw_home=results[7],
-            host_lose_home=results[8],
-            guest_win_away=results[9],
-            guest_draw_away=results[10],
-            guest_lose_away=results[11],
+            host_all_match_1=results[0],
+            host_all_match_2=results[1],
+            host_all_match_3=results[2],
+            guest_all_match_1=results[3],
+            guest_all_match_2=results[4],
+            guest_all_match_3=results[5],
+            host_home_match_1=results[6],
+            host_home_match_2=results[7],
+            host_home_match_3=results[8],
+            guest_away_match_1=results[9],
+            guest_away_match_2=results[10],
+            guest_away_match_3=results[11],
             updated_match_status=updated_match_status,
         ).append_updated_time()
 
     def update_from_list(
         self,
         match_id: MatchTable.match_id.type,
-        results: list[int],
+        results: list[str],
         updated_match_status: int,
     ):
         self.update_row(match_id, self.row_from_list(results, updated_match_status))

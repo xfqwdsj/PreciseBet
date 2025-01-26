@@ -8,7 +8,7 @@ from precise_bet.util import post_request_content, request_content
 
 def get_match_recent_results(
     match_id: str, session: requests.Session, ua: str, request_trying_times: int
-) -> list[int]:
+) -> list[str]:
     url = "https://odds.500.com/fenxi/shuju-" + match_id[1:] + ".shtml"
 
     text = request_content(
@@ -46,7 +46,7 @@ def parse_table(
     session: requests.Session = None,
     ua: str = None,
     request_trying_times: int = None,
-) -> list[int]:
+) -> list[str]:
     """
     解析球队近期比赛结果
 
@@ -61,21 +61,21 @@ def parse_table(
 
     trs = team_results.find_all("tr")
 
-    result = [0, 0, 0]
+    result = []
 
     for tr in trs[2:]:
         tds = tr.find_all("td")
-        if tds[0].text.strip() == "球会友谊" or sum(result) >= 3:
+        if tds[0].text.strip() == "球会友谊" or len(result) >= 3:
             continue
         match_result = tds[5].text.strip()
         if match_result == "胜":
-            result[0] += 1
+            result.append("win")
         elif match_result == "平":
-            result[1] += 1
+            result.append("draw")
         elif match_result == "负":
-            result[2] += 1
+            result.append("lose")
 
-    if session and ua and request_trying_times and sum(result) < 3:
+    if session and ua and request_trying_times and len(result) < 3:
         api_variant = team_results["id"][11:].split("_")
 
         form = team_results.find("div", class_="record_check")
@@ -114,7 +114,7 @@ def get_detailed_recent_results(
     session: requests.Session,
     ua: str,
     request_trying_times: int,
-) -> list[int]:
+) -> list[str]:
     url = (
         "https://odds.500.com/fenxi1/inc/shuju_zhanji"
         + api_variant_parameter_0

@@ -1,5 +1,4 @@
-#  Copyright (C) 2024  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
-import asyncio
+#  Copyright (C) 2025  LTFan (aka xfqwdsj). For full copyright notice, see `main.py`.
 import traceback
 from datetime import datetime
 
@@ -19,6 +18,7 @@ def flow(
     update_value: bool = True,
     only_new_value: bool = True,
     update_handicap: bool = True,
+    update_recent_results: bool = True,
     execute_times: int = 1,
     flow_interval: int = 0,
     terminate_time: int = None,
@@ -113,6 +113,24 @@ def flow(
                         extra_interval_probability=extra_interval_probability,
                         interval_offset_range=interval_offset_range,
                         break_hours=break_hours,
+                        request_trying_times=request_trying_times,
+                        **additional_parameter_update,
+                    )
+                    if should_terminate():
+                        raise KeyboardInterrupt
+
+            if step == 3:
+                if update_recent_results:
+                    update(
+                        ctx,
+                        action=UpdateActions.recent_results_action.value,
+                        volume_number=volume_number,
+                        interval=interval,
+                        extra_interval=extra_interval,
+                        extra_interval_probability=extra_interval_probability,
+                        interval_offset_range=interval_offset_range,
+                        break_hours=break_hours,
+                        only_new=True,
                         request_trying_times=request_trying_times,
                         **additional_parameter_update,
                     )

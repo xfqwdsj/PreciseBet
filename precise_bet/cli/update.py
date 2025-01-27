@@ -308,7 +308,8 @@ def update(
         data = data.loc[data[UpdatableTable.updated_time] == -1.0]
     data = data.loc[
         (global_data[DataTable.match_status] != 0)
-        | (break_hours & global_data[DataTable.match_time] < break_time)
+        | (break_hours <= 0)
+        | (global_data[DataTable.match_time] < break_time)
     ]
     data.sort_values(
         by=[DataTable.match_status, MatchInformationTable.updated_time],

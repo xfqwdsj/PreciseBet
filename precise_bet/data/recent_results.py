@@ -56,14 +56,15 @@ def parse_table(
     :param session: 请求会话
     :param ua: User-Agent
     :param request_trying_times: 请求尝试次数
-    :return: 近 3 场胜平负次数
+    :return: 近 3 场比赛结果
     """
 
     trs = team_results.find_all("tr")
+    trs = trs[2 : len(trs) - 1]
 
     result = []
 
-    for tr in trs[2:]:
+    for tr in trs:
         tds = tr.find_all("td")
         if tds[0].text.strip() == "球会友谊" or len(result) >= 3:
             continue
@@ -100,6 +101,9 @@ def parse_table(
             ua,
             request_trying_times,
         )
+
+    for _ in range(0, 3 - len(result)):
+        result.append("unknown")
 
     return result
 
